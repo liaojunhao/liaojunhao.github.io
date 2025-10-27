@@ -3,7 +3,7 @@ title: 简介
 date: 2018-11-01 11:20:46
 ---
 
-我是冰河末日，我惯用的昵称也是是**冰河末日**。
+我惯用的昵称是**冰河末日**。
 
 <img style="height:auto;" alt="" width="260" height="260"  src="https://avatars.githubusercontent.com/u/18565436?v=4">
 

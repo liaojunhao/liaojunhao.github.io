@@ -2,7 +2,6 @@
 title: 游戏引擎Phaser使用总结
 date: 2020-02-27 16:31:46
 tags:
-  - JS
   - 游戏
   - canvas
 categories:

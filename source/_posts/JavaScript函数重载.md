@@ -3,6 +3,7 @@ title: JavaScript函数重载
 date: 2017-09-21 14:56:19
 tags:
   - 函数
+  - JS
 categories:
   - JavaScript
 ---
@@ -116,8 +117,6 @@ console.log(users.find("John", "E", "Resig")); // 输出undefined
 由 addMethod 函数的调用顺序可知，users.find 最终绑定的是 find2 函数。然而，在绑定 find2 时，old 为 find1；同理，绑定 find1 时，old 为 find0。3 个函数 find0,find1 与 find2 就这样通过闭包链接起来了。
 
 根据 addMethod 的逻辑，当 fn.length 与 arguments.length 不匹配时，就会去调用 old，直到匹配为止。
-
-![重载](https://thumbnail1.baidupcs.com/thumbnail/8ef283549g9b5c4cc7436383e43b19df?fid=3109850117-250528-730835175362338&rt=pr&sign=FDTAER-DCb740ccc5511e5e8fedcff06b081203-N4UWH2APn3UwCEDXo1XnPRRIpp8%3d&expires=8h&chkbd=0&chkv=0&dp-logid=8804689670119790263&dp-callid=0&time=1688119200&size=c2560_u1440&quality=90&vuk=3109850117&ft=image&autopolicy=1)
 
 ## 重载的好处
 

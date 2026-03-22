@@ -1,19 +1,20 @@
 #title in header
-title: '冰河末日的博客'
+title: "冰河末日的博客"
 
 #main info
 #owner
-owner: ''
+owner: ""
 # email: 460200123@qq.com
-info: '曾就职于天助网、现就职于腾讯用户体验设计部'
+info: "曾就职于天助网、现就职于腾讯用户体验设计部"
 #description
-desc: '曾经是一位网页设计师，经历过兼容IE6跟jQuery的时代，再到后来的Vue、React的前后端分离的演变，参与过传统门户网站的建设、QQ会员、企鹅电竞各种运营类H5的开发、目前参与腾讯云智绘在线设计编辑器工具的前端工作，在工作中学习很多，感悟很多，都沉淀下来分享出来，欢迎交流。'
+desc: "曾经是一位网页设计师，经历过兼容IE6跟jQuery的时代，再到后来的Vue、React的前后端分离的演变，参与过传统门户网站的建设、QQ会员、企鹅电竞各种运营类H5的开发、目前参与腾讯云智绘在线设计编辑器工具的前端工作，在工作中学习很多，感悟很多，都沉淀下来分享出来，欢迎交流。"
 
 #menu
 menu:
   归档: /archives
   关于: /About
   分类: /categories
+  标签: /tags
 
 #index/main page max show posts (in number)
 max_post: 4

@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <!-- Minima -->
+  <!-- Hexo theme created by @adisaktijrs -->
+
+  <!-- Basic Page Needs
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta charset="utf-8">
+
+  
+  <title>游戏引擎Phaser使用总结</title>
+  
+  <link rel="canonical" href="https://liaojunhao.github.io/2020/02/27/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8EPhaser%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/">
+  
+  <meta name="description" content="Phaser 在渲染方面支持 webGL/canvas，架构方面 Phaser 直接内嵌了 3 个物理引擎（Arcade Physics，Ninja，p2.js）提供了动画，预加载，设备适配方案，粒子系统等功能。兼容方面移动端优先。这边之介绍我们最常用的一些方法/对象跟自己踩过的一些坑的经验分享。 ">
+  
+  
+  <meta name="author" content="andy">
+  
+  <meta property="og:image" content="https://liaojunhao.github.ioundefined">
+  
+  <meta property="og:site_name" content="冰河末日的博客" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="游戏引擎Phaser使用总结" />
+  
+  <meta property="og:description" content="Phaser 在渲染方面支持 webGL/canvas，架构方面 Phaser 直接内嵌了 3 个物理引擎（Arcade Physics，Ninja，p2.js）提供了动画，预加载，设备适配方案，粒子系统等功能。兼容方面移动端优先。这边之介绍我们最常用的一些方法/对象跟自己踩过的一些坑的经验分享。 ">
+  
+  <meta property="og:url" content="https://liaojunhao.github.io/2020/02/27/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8EPhaser%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/" />
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="游戏引擎Phaser使用总结">
+  
+  <meta name="twitter:description" content="Phaser 在渲染方面支持 webGL/canvas，架构方面 Phaser 直接内嵌了 3 个物理引擎（Arcade Physics，Ninja，p2.js）提供了动画，预加载，设备适配方案，粒子系统等功能。兼容方面移动端优先。这边之介绍我们最常用的一些方法/对象跟自己踩过的一些坑的经验分享。 ">
+  
+  
+  <meta name="twitter:image" content="https://liaojunhao.github.ioundefined">
+  
+  <meta name="twitter:url" content="https://liaojunhao.github.io/2020/02/27/%E6%B8%B8%E6%88%8F%E5%BC%95%E6%93%8EPhaser%E4%BD%BF%E7%94%A8%E6%80%BB%E7%BB%93/" />
+
+  <!-- Mobile Specific Metas
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Preload fonts
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link rel="preload" href="../fonts/dm-serif-display-v4-latin-regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../fonts/inter-v2-latin-regular.woff2" as="font" type="font/woff2" crossorigin>
+
+  <!-- CSS
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  
+<link rel="stylesheet" href="/css/normalize.css">
+
+  
+<link rel="stylesheet" href="/css/skeleton.css">
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+  
+<link rel="stylesheet" href="/css/prism-dark.css">
+
+  
+<link rel="stylesheet" href="/css/prism-line-numbers.css">
+
+  <!-- User css -->
+  
+
+  <!-- Favicon
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link rel="icon" type="image/png" href="/images/favicon.png">
+
+  <!-- Custom Theme Color Style
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <style>
+  a:not(.icon) {
+    text-decoration-color: #0FA0CE;
+    background-image: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0) 50%,
+      #0FA0CE 50%
+    );
+  }
+  blockquote {
+    border-left: 8px solid #0FA0CE;
+  }
+  .nanobar .bar {
+    background: #0FA0CE;
+  }
+  .button.button-primary:hover,
+  button.button-primary:hover,
+  input[type="submit"].button-primary:hover,
+  input[type="reset"].button-primary:hover,
+  input[type="button"].button-primary:hover,
+  .button.button-primary:focus,
+  button.button-primary:focus,
+  input[type="submit"].button-primary:focus,
+  input[type="reset"].button-primary:focus,
+  input[type="button"].button-primary:focus {
+    background-color: #0FA0CE;
+    border-color: #0FA0CE;
+  }
+  input[type="email"]:focus,
+  input[type="number"]:focus,
+  input[type="search"]:focus,
+  input[type="text"]:focus,
+  input[type="tel"]:focus,
+  input[type="url"]:focus,
+  input[type="password"]:focus,
+  textarea:focus,
+  select:focus {
+    border: 1px solid #0FA0CE;
+  }
+</style>
+
+  <!-- Google Analytics (With Privacy Settings On)
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  
+
+<meta name="generator" content="Hexo 5.4.2"><link rel="alternate" href="/atom.xml" title="冰河末日的博客" type="application/atom+xml">
+</head>
+
+<body>
+  <div class="container">
+    <div class="row">
+      <div>
+
+        <div class="row">
+  <div class="two columns" style="max-width: 50px">
+    <h1 class="mt-2 mode">
+      <div onclick=setDarkMode(true) id="darkBtn">🌑</div>
+      <div onclick=setDarkMode(false) id="lightBtn" class=hidden>☀️</div>
+      <script >
+        if (localStorage.getItem('preferredTheme') == 'dark') {
+          setDarkMode(true)
+        }
+        function setDarkMode(isDark) {
+          var darkBtn = document.getElementById('darkBtn')
+          var lightBtn = document.getElementById('lightBtn')
+          if (isDark) {
+            lightBtn.style.display = "block"
+            darkBtn.style.display = "none"
+            localStorage.setItem('preferredTheme', 'dark');
+          } else {
+            lightBtn.style.display = "none"
+            darkBtn.style.display = "block"
+            localStorage.removeItem('preferredTheme');
+          }
+          document.body.classList.toggle("darkmode");
+        }
+      </script>
+    </h1>
+  </div>
+
+  <div class="six columns ml-1">
+    <h1 class="mt-2">
+      冰河末日的博客
+    </h1>
+  </div>
+
+  <div class="twelve columns">
+    <div class="row">
+      <div class="nine columns left">
+        <a href="/">主页</a>
+        
+          
+          <a href="/archives" class="ml">归档</a>
+          
+        
+          
+          <a href="/About" class="ml">关于</a>
+          
+        
+          
+          <a href="/categories" class="ml">分类</a>
+          
+        
+          
+          <a href="/tags" class="ml">标签</a>
+          
+        
+        
+      </div>
+    </div>
+    <hr style="margin-bottom: 2.6rem">
+  </div>
+</div>
+
+        <div class="trans">
+            <h2>游戏引擎Phaser使用总结</h2>
+  <span class="time" style="margin-bottom: 30px;display: block;">— 2020年2月27日</span>
+  <style>
+    .toc{margin-left: 35px;}
+  </style>
+  <div style="float: left; width: 220px; margin-left: -288px; opacity: .8; position: sticky; top: 0;">
+    <div style="overflow-x: hidden; overflow-y: auto; margin-bottom: 40px; height: calc(100vh - 188px); width: 220px;">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%88%9D%E5%A7%8B%E5%8C%96%E6%B8%B8%E6%88%8F"><span class="toc-text">初始化游戏</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E7%A7%BB%E5%8A%A8%E7%AB%AF%E9%80%82%E9%85%8D"><span class="toc-text">移动端适配</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%BA%E6%99%AF%E7%9A%84%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F"><span class="toc-text">场景的生命周期</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%B5%84%E6%BA%90%E7%9A%84%E9%A2%84%E5%8A%A0%E8%BD%BD-Preload"><span class="toc-text">资源的预加载 Preload</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%BA%E6%99%AF%E5%88%9B%E5%BB%BA-create"><span class="toc-text">场景创建 create</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E7%94%BB%E5%B8%83%E6%9B%B4%E6%96%B0-update"><span class="toc-text">画布更新 update</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E6%B8%B2%E6%9F%93%E8%AE%BE%E7%BD%AE-render"><span class="toc-text">渲染设置 render</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9C%BA%E6%99%AF%E7%9A%84%E7%AE%A1%E7%90%86"><span class="toc-text">场景的管理</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%BA%E6%99%AF%E7%9A%84%E5%88%87%E6%8D%A2"><span class="toc-text">场景的切换</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%9C%BA%E6%99%AF%E7%9A%84%E9%94%80%E6%AF%81"><span class="toc-text">场景的销毁</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%B8%B8%E8%A7%81%E5%AF%B9%E8%B1%A1"><span class="toc-text">常见对象</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%96%87%E6%9C%AC%EF%BC%9AText"><span class="toc-text">文本：Text</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E8%87%AA%E5%AE%9A%E4%B9%89%E5%AD%97%E4%BD%93"><span class="toc-text">自定义字体</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%97%E4%BD%93%E9%A2%84%E5%8A%A0%E8%BD%BD"><span class="toc-text">字体预加载</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%97%E4%BD%93%E7%9A%84%E8%A1%8C%E8%B7%9D"><span class="toc-text">字体的行距</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AD%97%E7%AC%A6%E7%9A%84%E9%97%B4%E8%B7%9D"><span class="toc-text">字符的间距</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BD%8D%E5%9B%BE%E5%AD%97%E4%BD%93%EF%BC%9ABitmapText"><span class="toc-text">位图字体：BitmapText</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E6%97%B6%E9%97%B4%EF%BC%9ATime"><span class="toc-text">时间：Time</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9A%E6%97%B6%E5%99%A8%EF%BC%9ATimer"><span class="toc-text">定时器：Timer</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#%E5%AE%9A%E6%97%B6%E5%99%A8%E4%BA%8B%E4%BB%B6%EF%BC%9ATimerEvent"><span class="toc-text">定时器事件：TimerEvent</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%8A%A8%E7%94%BB"><span class="toc-text">动画</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8B%E4%BB%B6%E7%BB%91%E5%AE%9A"><span class="toc-text">事件绑定</span></a></li></ol>
+    </div>
+  </div>
+  <blockquote>
+<p>Phaser 在渲染方面支持 webGL/canvas，架构方面 Phaser 直接内嵌了 3 个物理引擎（Arcade Physics，Ninja，p2.js）<br>提供了动画，预加载，设备适配方案，粒子系统等功能。兼容方面移动端优先。这边之介绍我们最常用的一些方法/对象跟自己踩过的一些坑的经验分享。</p>
+</blockquote>
+<h2 id="初始化游戏"><a href="#初始化游戏" class="headerlink" title="初始化游戏"></a>初始化游戏</h2><p><code>new Phaser.Game(width, height, renderer, parent, state, transparent, antialias)</code></p>
+<ul>
+<li>width：画布宽度</li>
+<li>height：画布高度</li>
+<li>renderer：渲染方式<ul>
+<li>Phaser.AUTO</li>
+<li>Phaser.CANVAS</li>
+<li>Phaser.WEBGL</li>
+</ul>
+</li>
+<li>parent：游戏 canvas 挂载的 DOM ID 或者 DOM 节点</li>
+<li>state：游戏场景对象(按执行顺序：init、preload、create、update、render)</li>
+<li>transparent：是否为透明</li>
+<li>antialias：贴图是否抗锯齿</li>
+</ul>
+<pre class="line-numbers language-javascript" data-language="javascript"><code class="language-javascript"><span class="token keyword">let</span> game <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Phaser<span class="token punctuation">.</span>Game</span><span class="token punctuation">(</span>
+  <span class="token number">800</span><span class="token punctuation">,</span>
+  <span class="token number">600</span><span class="token punctuation">,</span>
+  Phaser<span class="token punctuation">.</span><span class="token constant">AUTO</span><span class="token punctuation">,</span>
+  <span class="token string">"phaser-container"</span><span class="token punctuation">,</span>
+  <span class="token punctuation">&#123;</span>
+    <span class="token literal-property property">init</span><span class="token operator">:</span> init<span class="token punctuation">,</span>
+    <span class="token literal-property property">preload</span><span class="token operator">:</span> preload<span class="token punctuation">,</span>
+    <span class="token literal-property property">create</span><span class="token operator">:</span> create<span class="token punctuation">,</span>
+    <span class="token literal-property property">update</span><span class="token operator">:</span> update<span class="token punctuation">,</span>
+    <span class="token literal-property property">render</span><span class="token operator">:</span> render<span class="token punctuation">,</span>
+  <span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+  <span class="token boolean">false</span><span class="token punctuation">,</span>
+  <span class="token boolean">true</span>
+<span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="移动端适配"><a href="#移动端适配" class="headerlink" title="移动端适配"></a>移动端适配</h2><p>以 750*1336 设计稿为例。</p>
+<pre class="line-numbers language-javascript" data-language="javascript"><code class="language-javascript"><span class="token keyword">let</span> game <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Phaser<span class="token punctuation">.</span>Game</span><span class="token punctuation">(</span><span class="token number">750</span><span class="token punctuation">,</span> <span class="token number">1336</span><span class="token punctuation">,</span> Phaser<span class="token punctuation">.</span><span class="token constant">CANVAS</span><span class="token punctuation">,</span> <span class="token string">"game"</span><span class="token punctuation">,</span> <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span><span class="token punctuation">,</span> <span class="token boolean">true</span><span class="token punctuation">,</span> <span class="token boolean">true</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token comment">// 推荐 SHOW_ALL：</span>
+<span class="token comment">// 比例不变，缩放不变形（通常使用该类型）</span>
+game<span class="token punctuation">.</span>scale<span class="token punctuation">.</span>scaleMode <span class="token operator">=</span> Phaser<span class="token punctuation">.</span>ScaleManager<span class="token punctuation">.</span><span class="token constant">SHOW_ALL</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h2 id="场景的生命周期"><a href="#场景的生命周期" class="headerlink" title="场景的生命周期"></a>场景的生命周期</h2><p>可以理解为类型 vue 哪有的生命周期，在一个场景从创建到渲染都会走的几个钩子函数</p>
+<pre class="line-numbers language-javascript" data-language="javascript"><code class="language-javascript"><span class="token comment">// 初始化</span>
+<span class="token keyword">function</span> <span class="token function">init</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span>
+<span class="token comment">// 预加载</span>
+<span class="token keyword">function</span> <span class="token function">preload</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span>
+<span class="token comment">// 场景创建</span>
+<span class="token keyword">function</span> <span class="token function">create</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span>
+<span class="token comment">// 画布更新</span>
+<span class="token keyword">function</span> <span class="token function">update</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span>
+<span class="token comment">// 渲染设置</span>
+<span class="token keyword">function</span> <span class="token function">render</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="资源的预加载-Preload"><a href="#资源的预加载-Preload" class="headerlink" title="资源的预加载 Preload"></a>资源的预加载 Preload</h3><p>写在 preload 函数中</p>
+<ol>
+<li>game.load.image(key, url, overwrite)</li>
+</ol>
+<h3 id="场景创建-create"><a href="#场景创建-create" class="headerlink" title="场景创建 create"></a>场景创建 create</h3><h3 id="画布更新-update"><a href="#画布更新-update" class="headerlink" title="画布更新 update"></a>画布更新 update</h3><h3 id="渲染设置-render"><a href="#渲染设置-render" class="headerlink" title="渲染设置 render"></a>渲染设置 render</h3><h2 id="场景的管理"><a href="#场景的管理" class="headerlink" title="场景的管理"></a>场景的管理</h2><h3 id="场景的切换"><a href="#场景的切换" class="headerlink" title="场景的切换"></a>场景的切换</h3><h3 id="场景的销毁"><a href="#场景的销毁" class="headerlink" title="场景的销毁"></a>场景的销毁</h3><pre class="line-numbers language-javascript" data-language="javascript"><code class="language-javascript"><span class="token comment">// 销毁整个游戏</span>
+game<span class="token punctuation">.</span><span class="token function">destroy</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<h2 id="常见对象"><a href="#常见对象" class="headerlink" title="常见对象"></a>常见对象</h2><p>Game 对象</p>
+<ul>
+<li>World 对象<ul>
+<li>设置游戏世界范围</li>
+</ul>
+</li>
+</ul>
+<pre class="line-numbers language-javascript" data-language="javascript"><code class="language-javascript"><span class="token comment">// 不设默认为canvas画布大小</span>
+game<span class="token punctuation">.</span>world<span class="token punctuation">.</span><span class="token function">setBounds</span><span class="token punctuation">(</span>x<span class="token punctuation">,</span> y<span class="token punctuation">,</span> width<span class="token punctuation">,</span> height<span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<p>Stage 对象<br>Camare 对象<br>State<br>Sprite</p>
+<h2 id="文本：Text"><a href="#文本：Text" class="headerlink" title="文本：Text"></a>文本：Text</h2><h3 id="自定义字体"><a href="#自定义字体" class="headerlink" title="自定义字体"></a>自定义字体</h3><pre class="line-numbers language-css" data-language="css"><code class="language-css"><span class="token comment">/* CSS中先设置好字体 */</span>
+<span class="token atrule"><span class="token rule">@font-face</span></span> <span class="token punctuation">&#123;</span>
+  <span class="token property">font-family</span><span class="token punctuation">:</span> <span class="token string">"WEBFONT"</span><span class="token punctuation">;</span>
+  <span class="token property">font-display</span><span class="token punctuation">:</span> swap<span class="token punctuation">;</span>
+  <span class="token property">src</span><span class="token punctuation">:</span> <span class="token url"><span class="token function">url</span><span class="token punctuation">(</span><span class="token string url">"../font/webfont.eot"</span><span class="token punctuation">)</span></span><span class="token punctuation">;</span> <span class="token comment">/* IE9*/</span>
+  <span class="token property">src</span><span class="token punctuation">:</span> <span class="token url"><span class="token function">url</span><span class="token punctuation">(</span><span class="token string url">"../font/webfont.eot?#iefix"</span><span class="token punctuation">)</span></span> <span class="token function">format</span><span class="token punctuation">(</span><span class="token string">"embedded-opentype"</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token comment">/* IE6-IE8 */</span>
+      <span class="token url"><span class="token function">url</span><span class="token punctuation">(</span><span class="token string url">"../font/webfont.woff2"</span><span class="token punctuation">)</span></span> <span class="token function">format</span><span class="token punctuation">(</span><span class="token string">"woff2"</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token url"><span class="token function">url</span><span class="token punctuation">(</span><span class="token string url">"../font/webfont.woff"</span><span class="token punctuation">)</span></span> <span class="token function">format</span><span class="token punctuation">(</span><span class="token string">"woff"</span><span class="token punctuation">)</span><span class="token punctuation">,</span> <span class="token comment">/* chrome、firefox */</span>
+      <span class="token url"><span class="token function">url</span><span class="token punctuation">(</span><span class="token string url">"../font/webfont.ttf"</span><span class="token punctuation">)</span></span> <span class="token function">format</span><span class="token punctuation">(</span><span class="token string">"truetype"</span><span class="token punctuation">)</span><span class="token punctuation">,</span>
+    <span class="token comment">/* chrome、firefox、opera、Safari, Android, iOS 4.2+*/</span>
+      <span class="token url"><span class="token function">url</span><span class="token punctuation">(</span><span class="token string url">"../font/webfont.svg#思源黑体-细"</span><span class="token punctuation">)</span></span> <span class="token function">format</span><span class="token punctuation">(</span><span class="token string">"svg"</span><span class="token punctuation">)</span><span class="token punctuation">;</span> <span class="token comment">/* iOS 4.1- */</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<pre class="line-numbers language-javascript" data-language="javascript"><code class="language-javascript"><span class="token comment">// Phaser中添加字体的设置</span>
+<span class="token keyword">let</span> style <span class="token operator">=</span> <span class="token punctuation">&#123;</span>
+  <span class="token literal-property property">font</span><span class="token operator">:</span> <span class="token string">"30px WEBFONT"</span><span class="token punctuation">,</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">;</span>
+game<span class="token punctuation">.</span>add<span class="token punctuation">.</span><span class="token function">text</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">,</span> <span class="token number">0</span><span class="token punctuation">,</span> <span class="token string">"你好世界"</span><span class="token punctuation">,</span> style<span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="字体预加载"><a href="#字体预加载" class="headerlink" title="字体预加载"></a>字体预加载</h3><ul>
+<li>自定义字体常见的坑：<ul>
+<li>当字体<font color='red'> 没有加载完毕 </font>，Phaser 还是会渲染系统默认当字体</li>
+</ul>
+</li>
+<li>解决方案：<ul>
+<li>使用第三方库<font color='red'> fontfaceobserver </font>来做字体的预加载</li>
+</ul>
+</li>
+</ul>
+<pre class="line-numbers language-javascript" data-language="javascript"><code class="language-javascript"><span class="token comment">// 在vue的钩子函数mounted中做预加载</span>
+<span class="token keyword">async</span> <span class="token function">mounted</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  <span class="token comment">// 要加载的字体</span>
+  <span class="token keyword">let</span> fontOptions <span class="token operator">=</span> <span class="token punctuation">[</span>
+    <span class="token string">'HELVETI1-1'</span><span class="token punctuation">,</span>
+    <span class="token string">'WEBFONT'</span>
+  <span class="token punctuation">]</span><span class="token punctuation">;</span>
+  <span class="token comment">// 加载完成后返回的promise队列</span>
+  <span class="token keyword">let</span> fontLoadList <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">;</span>
+  fontOptions<span class="token punctuation">.</span><span class="token function">forEach</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">item</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">let</span> font <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">FontFaceObserver</span><span class="token punctuation">(</span>item<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    fontLoadList<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>font<span class="token punctuation">.</span><span class="token function">load</span><span class="token punctuation">(</span><span class="token keyword">null</span><span class="token punctuation">,</span> <span class="token number">5000</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span><span class="token punctuation">)</span>
+  <span class="token comment">// 等待所有promise完成</span>
+  <span class="token keyword">await</span> Promise<span class="token punctuation">.</span><span class="token function">all</span><span class="token punctuation">(</span>fontLoadList<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">resolve</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">&#123;</span>
+    <span class="token comment">// 游戏初始化</span>
+    <span class="token function">init</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">catch</span><span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token parameter">reason</span><span class="token punctuation">)</span> <span class="token operator">=></span> <span class="token punctuation">&#123;</span>
+    console<span class="token punctuation">.</span><span class="token function">log</span><span class="token punctuation">(</span><span class="token string">'字体加载失败：'</span><span class="token punctuation">,</span> reason<span class="token punctuation">)</span><span class="token punctuation">;</span>
+  <span class="token punctuation">&#125;</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+<span class="token punctuation">&#125;</span><span class="token punctuation">,</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="字体的行距"><a href="#字体的行距" class="headerlink" title="字体的行距"></a>字体的行距</h3><pre class="line-numbers language-javascript" data-language="javascript"><code class="language-javascript">text<span class="token punctuation">.</span>lineSpacing <span class="token operator">=</span> <span class="token number">40</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<h3 id="字符的间距"><a href="#字符的间距" class="headerlink" title="字符的间距"></a>字符的间距</h3><p>很遗憾 Phaser 不支持，也不是 Phaser 的问题而是 canvas 对文字排版这块支持比较弱。可以使用一些 hack 手段来实现，但是会比较繁琐，可以看张鑫旭老师的这篇博文介绍：<br><a target="_blank" rel="noopener" href="https://www.zhangxinxu.com/wordpress/2018/02/canvas-text-break-line-letter-spacing-vertical/">绘制字符间距</a>。</p>
+<p>也可以用通过<code>BitmapText</code>这种图片字体来实现，不过种方式也不太适合中文（文字太多工作量太大）</p>
+<h2 id="位图字体：BitmapText"><a href="#位图字体：BitmapText" class="headerlink" title="位图字体：BitmapText"></a>位图字体：BitmapText</h2><h2 id="时间：Time"><a href="#时间：Time" class="headerlink" title="时间：Time"></a>时间：Time</h2><p>基本时间事件</p>
+<pre class="line-numbers language-javascript" data-language="javascript"><code class="language-javascript"><span class="token comment">// Phaser.Timer.SECOND 每秒的毫秒数(1000)</span>
+game<span class="token punctuation">.</span>time<span class="token punctuation">.</span>events<span class="token punctuation">.</span><span class="token function">add</span><span class="token punctuation">(</span>Phaser<span class="token punctuation">.</span>Timer<span class="token punctuation">.</span><span class="token constant">SECOND</span> <span class="token operator">*</span> <span class="token number">4</span><span class="token punctuation">,</span> <span class="token keyword">function</span> <span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span><span class="token punctuation">&#125;</span><span class="token punctuation">,</span> <span class="token keyword">this</span><span class="token punctuation">)</span><span class="token punctuation">;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span></span></code></pre>
+
+<h3 id="定时器：Timer"><a href="#定时器：Timer" class="headerlink" title="定时器：Timer"></a>定时器：Timer</h3><h3 id="定时器事件：TimerEvent"><a href="#定时器事件：TimerEvent" class="headerlink" title="定时器事件：TimerEvent"></a>定时器事件：TimerEvent</h3><p>使用<code>Phaser.Timer.add</code> / <code>Phaser.Timer.repeat</code> / <code>Phaser.Timer.loop</code> 方法来新建事件</p>
+<h2 id="动画"><a href="#动画" class="headerlink" title="动画"></a>动画</h2><h2 id="事件绑定"><a href="#事件绑定" class="headerlink" title="事件绑定"></a>事件绑定</h2>
+  <p><a class="classtest-link" href="/tags/canvas/" rel="tag">canvas</a>, <a class="classtest-link" href="/tags/%E6%B8%B8%E6%88%8F/" rel="tag">游戏</a></p>
+  
+
+
+          <div class="row mt-2">
+  
+    <div class="eight columns">
+      <p id="madewith" style="color: #c7c7c7;">知行合一
+        
+    </div>
+
+    <!-- Sepcial thanks to https://simpleicons.org/ for the icons -->
+    <div class="four columns mb-3 posisi" >
+      
+      <a class="ml-0 footer-link icon" href="https://github.com/liaojunhao" target="_blank" style="text-decoration: none" rel="noreferrer" aria-label="GitHub">
+        <svg class="github svg-hov" width="18" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>GitHub</title><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+      </a>
+      
+
+      
+
+      
+
+      
+
+      
+
+    </div>
+  
+</div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+  <script src="/js/nanobar.min.js"></script>
+  <script>
+    var options = {
+      classname: 'nanobar',
+      id: 'myNanobar'
+    };
+    var nanobar = new Nanobar(options);
+    nanobar.go(30);
+    nanobar.go(76);
+    nanobar.go(100);
+  </script>
+
+</body>
+
+</html>

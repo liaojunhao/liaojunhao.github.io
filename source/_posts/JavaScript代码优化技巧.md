@@ -1,10 +1,11 @@
 ---
 title: JavaScript代码优化技巧
 date: 2018-07-03 10:08:03
-tags:
-  - JS
 categories:
+  - JavaScript 系列
+tags:
   - JavaScript
+  - JS
 ---
 
 ## if-多条件判断

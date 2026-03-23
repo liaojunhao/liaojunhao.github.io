@@ -3,8 +3,6 @@ title: JavaScript 闭包深度解析：从词法作用域到内存管理
 date: 2026-03-22 13:18:00
 tags:
   - JavaScript
-  - 前端
-  - JS 系列
 categories:
   - JavaScript 系列
 ---

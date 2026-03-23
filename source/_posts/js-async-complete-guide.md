@@ -3,8 +3,6 @@ title: JavaScript 异步编程完全指南：从回调到 async/await
 date: 2026-03-23 14:52:00
 tags:
   - JavaScript
-  - 异步编程
-  - JS 系列
 categories:
   - JavaScript 系列
 ---

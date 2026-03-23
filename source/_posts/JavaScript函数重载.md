@@ -5,7 +5,6 @@ categories:
   - JavaScript 系列
 tags:
   - JavaScript
-  - 函数
 ---
 
 > 译者按: jQuery 之父 John Resig 巧妙地利用了闭包，实现了 JavaScript 函数重载。

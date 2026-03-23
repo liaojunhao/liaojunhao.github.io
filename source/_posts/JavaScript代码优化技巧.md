@@ -5,7 +5,6 @@ categories:
   - JavaScript 系列
 tags:
   - JavaScript
-  - JS
 ---
 
 ## if-多条件判断

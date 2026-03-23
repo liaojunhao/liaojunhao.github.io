@@ -112,4 +112,5 @@ theme: minima
 ## Docs: https://hexo.io/docs/one-command-deployment
 deploy:
   type: git
-  repo: https://github.com/liaojunhao/blog.git
+  repo: https://github.com/liaojunhao/liaojunhao.github.io.git
+  branch: gh-pages

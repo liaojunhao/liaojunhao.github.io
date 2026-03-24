@@ -16,7 +16,7 @@ tags:
 
 ---
 
-## 1. 如何实现一个准确的前端倒计时？
+## 如何实现一个准确的前端倒计时？
 
 ### 问题本质
 
@@ -54,17 +54,17 @@ const stop = createCountdown(
   60 * 1000,
   (remain) => {
     const seconds = Math.ceil(remain / 1000);
-    document.getElementById('timer').textContent = `${seconds}秒`;
+    document.getElementById("timer").textContent = `${seconds}秒`;
   },
-  () => console.log('倒计时结束')
+  () => console.log("倒计时结束")
 );
 ```
 
 ### 进阶：页面切后台后恢复
 
 ```javascript
-document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible') {
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") {
     // 页面重新可见，立即刷新一次，避免显示旧数据
     const remain = endTime - Date.now();
     onTick(Math.max(0, remain));
@@ -74,7 +74,7 @@ document.addEventListener('visibilitychange', () => {
 
 ---
 
-## 2. 如何设计精准的秒杀倒计时？
+## 如何设计精准的秒杀倒计时？
 
 ### 问题本质
 
@@ -89,7 +89,7 @@ document.addEventListener('visibilitychange', () => {
 ```javascript
 async function initSeckillCountdown(activityStartTime) {
   // 1. 获取服务器时间
-  const { serverTime } = await fetch('/api/server-time').then(r => r.json());
+  const { serverTime } = await fetch("/api/server-time").then((r) => r.json());
 
   // 2. 计算时间差（本地时间 - 服务器时间）
   const diff = Date.now() - serverTime;
@@ -120,7 +120,7 @@ function updateCountdownUI(remain) {
 
 ---
 
-## 3. Web 管理系统越用越慢，如何排查？
+## Web 管理系统越用越慢，如何排查？
 
 ### 排查思路：先定位，再优化
 
@@ -133,20 +133,20 @@ function updateCountdownUI(remain) {
 
 ### 使用 Chrome DevTools 定位
 
-| 工具 | 排查内容 |
-|------|---------|
-| **Network** | 接口 TTFB、响应时间是否变长 |
-| **Performance** | JS 执行耗时、渲染帧率 |
-| **Memory** | 内存是否持续增长（泄漏） |
-| **Lighthouse** | 整体性能评分和优化建议 |
+| 工具            | 排查内容                    |
+| --------------- | --------------------------- |
+| **Network**     | 接口 TTFB、响应时间是否变长 |
+| **Performance** | JS 执行耗时、渲染帧率       |
+| **Memory**      | 内存是否持续增长（泄漏）    |
+| **Lighthouse**  | 整体性能评分和优化建议      |
 
 ### 前端常见问题与解决方案
 
 ```javascript
 // ❌ 问题 1：大列表一次性渲染
 // 一次渲染 10000 条数据，DOM 节点过多
-list.forEach(item => {
-  const el = document.createElement('div');
+list.forEach((item) => {
+  const el = document.createElement("div");
   el.textContent = item.name;
   container.appendChild(el);
 });
@@ -156,13 +156,13 @@ list.forEach(item => {
 
 // ❌ 问题 2：事件监听未释放（内存泄漏）
 function init() {
-  window.addEventListener('resize', handleResize);
+  window.addEventListener("resize", handleResize);
   // 组件销毁时忘记移除
 }
 
 // ✅ 解决：组件销毁时清理
 onUnmounted(() => {
-  window.removeEventListener('resize', handleResize);
+  window.removeEventListener("resize", handleResize);
 });
 
 // ❌ 问题 3：定时器未清理
@@ -181,7 +181,7 @@ function startPolling() {
 
 ---
 
-## 4. 后端返回几万条数据，前端表格如何展示？
+## 后端返回几万条数据，前端表格如何展示？
 
 ### 核心原则：不一次性渲染所有 DOM
 
@@ -203,15 +203,17 @@ class VirtualList {
 
   init() {
     const totalHeight = this.data.length * this.itemHeight;
-    this.container.style.position = 'relative';
+    this.container.style.position = "relative";
     this.container.style.height = `${totalHeight}px`;
 
-    this.visibleContainer = document.createElement('div');
-    this.visibleContainer.style.position = 'absolute';
-    this.visibleContainer.style.width = '100%';
+    this.visibleContainer = document.createElement("div");
+    this.visibleContainer.style.position = "absolute";
+    this.visibleContainer.style.width = "100%";
     this.container.appendChild(this.visibleContainer);
 
-    this.container.parentElement.addEventListener('scroll', () => this.render());
+    this.container.parentElement.addEventListener("scroll", () =>
+      this.render()
+    );
     this.render();
   }
 
@@ -226,7 +228,7 @@ class VirtualList {
     );
 
     this.visibleContainer.style.top = `${startIndex * this.itemHeight}px`;
-    this.visibleContainer.innerHTML = '';
+    this.visibleContainer.innerHTML = "";
 
     for (let i = startIndex; i < endIndex; i++) {
       const el = this.renderItem(this.data[i], i);
@@ -243,15 +245,13 @@ class VirtualList {
 ```javascript
 // worker.js
 self.onmessage = ({ data: { list, keyword } }) => {
-  const result = list.filter(item =>
-    item.name.includes(keyword)
-  );
+  const result = list.filter((item) => item.name.includes(keyword));
   self.postMessage(result);
 };
 
 // main.js
-const worker = new Worker('./worker.js');
-worker.postMessage({ list: bigData, keyword: '搜索词' });
+const worker = new Worker("./worker.js");
+worker.postMessage({ list: bigData, keyword: "搜索词" });
 worker.onmessage = ({ data }) => {
   renderTable(data);
 };
@@ -259,7 +259,7 @@ worker.onmessage = ({ data }) => {
 
 ---
 
-## 5. H5 瀑布流在低端安卓机和弱网下如何优化？
+## H5 瀑布流在低端安卓机和弱网下如何优化？
 
 ### 优化策略全景
 
@@ -283,34 +283,37 @@ worker.onmessage = ({ data }) => {
 
 ```javascript
 // 图片懒加载（IntersectionObserver）
-const observer = new IntersectionObserver((entries) => {
-  entries.forEach(entry => {
-    if (entry.isIntersecting) {
-      const img = entry.target;
-      img.src = img.dataset.src;
-      img.removeAttribute('data-src');
-      observer.unobserve(img);
-    }
-  });
-}, {
-  rootMargin: '200px 0px' // 提前 200px 开始加载
-});
+const observer = new IntersectionObserver(
+  (entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const img = entry.target;
+        img.src = img.dataset.src;
+        img.removeAttribute("data-src");
+        observer.unobserve(img);
+      }
+    });
+  },
+  {
+    rootMargin: "200px 0px", // 提前 200px 开始加载
+  }
+);
 
-document.querySelectorAll('img[data-src]').forEach(img => {
+document.querySelectorAll("img[data-src]").forEach((img) => {
   observer.observe(img);
 });
 
 // 弱网检测降级
 const connection = navigator.connection;
-if (connection?.effectiveType === '2g' || connection?.saveData) {
+if (connection?.effectiveType === "2g" || connection?.saveData) {
   // 切换到简化模式：小图、无动画
-  document.body.classList.add('lite-mode');
+  document.body.classList.add("lite-mode");
 }
 ```
 
 ---
 
-## 6. 如何设计一个支持任意内容的单选框组件？
+## 如何设计一个支持任意内容的单选框组件？
 
 ### 设计思路
 
@@ -325,16 +328,16 @@ if (connection?.effectiveType === '2g' || connection?.saveData) {
 </template>
 
 <script setup>
-import { provide, toRefs } from 'vue';
+import { provide, toRefs } from "vue";
 
 const props = defineProps({
-  modelValue: { type: [String, Number], required: true }
+  modelValue: { type: [String, Number], required: true },
 });
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(["update:modelValue"]);
 
-provide('radioGroup', {
+provide("radioGroup", {
   ...toRefs(props),
-  onChange: (val) => emit('update:modelValue', val)
+  onChange: (val) => emit("update:modelValue", val),
 });
 </script>
 ```
@@ -357,14 +360,14 @@ provide('radioGroup', {
 </template>
 
 <script setup>
-import { inject, computed } from 'vue';
+import { inject, computed } from "vue";
 
 const props = defineProps({
   value: { type: [String, Number], required: true },
-  disabled: { type: Boolean, default: false }
+  disabled: { type: Boolean, default: false },
 });
 
-const { modelValue, onChange } = inject('radioGroup');
+const { modelValue, onChange } = inject("radioGroup");
 const isChecked = computed(() => modelValue.value === props.value);
 
 const select = () => {
@@ -375,7 +378,7 @@ const select = () => {
 
 ---
 
-## 7. 如何排查网页白屏问题？
+## 如何排查网页白屏问题？
 
 ### 排查流程
 
@@ -396,22 +399,26 @@ const select = () => {
 ```javascript
 // 1. 全局错误监控
 window.onerror = (message, source, lineno, colno, error) => {
-  reportError({ type: 'js_error', message, source, lineno, error });
+  reportError({ type: "js_error", message, source, lineno, error });
 };
 
-window.addEventListener('unhandledrejection', (event) => {
-  reportError({ type: 'promise_error', reason: event.reason });
+window.addEventListener("unhandledrejection", (event) => {
+  reportError({ type: "promise_error", reason: event.reason });
 });
 
 // 2. 资源加载失败监控
-window.addEventListener('error', (event) => {
-  if (event.target !== window) {
-    reportError({
-      type: 'resource_error',
-      src: event.target.src || event.target.href
-    });
-  }
-}, true);
+window.addEventListener(
+  "error",
+  (event) => {
+    if (event.target !== window) {
+      reportError({
+        type: "resource_error",
+        src: event.target.src || event.target.href,
+      });
+    }
+  },
+  true
+);
 
 // 3. React ErrorBoundary
 class ErrorBoundary extends React.Component {
@@ -422,7 +429,7 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, info) {
-    reportError({ type: 'render_error', error, info });
+    reportError({ type: "render_error", error, info });
   }
 
   render() {
@@ -436,24 +443,25 @@ class ErrorBoundary extends React.Component {
 
 ---
 
-## 8. 如何启动一个新的前端项目？
+## 如何启动一个新的前端项目？
 
 ### 完整流程
 
 **第一步：需求对齐**
+
 - 产品形态（后台系统 / C 端 / 小程序）
 - 用户量和性能要求（是否需要 SSR/SEO）
 - 工期（决定技术方案保守程度）
 
 **第二步：技术选型**
 
-| 维度 | 选项 |
-|------|------|
-| 框架 | Vue 3 / React 18 / Next.js |
-| 语言 | TypeScript（强烈推荐） |
-| UI 库 | Ant Design / Element Plus |
-| 构建工具 | Vite |
-| 状态管理 | Pinia / Zustand |
+| 维度     | 选项                       |
+| -------- | -------------------------- |
+| 框架     | Vue 3 / React 18 / Next.js |
+| 语言     | TypeScript（强烈推荐）     |
+| UI 库    | Ant Design / Element Plus  |
+| 构建工具 | Vite                       |
+| 状态管理 | Pinia / Zustand            |
 
 **第三步：工程化搭建**
 
@@ -479,14 +487,14 @@ src/
 // Axios 统一封装
 const request = axios.create({ baseURL: import.meta.env.VITE_API_URL });
 
-request.interceptors.request.use(config => {
+request.interceptors.request.use((config) => {
   config.headers.Authorization = `Bearer ${getToken()}`;
   return config;
 });
 
 request.interceptors.response.use(
-  res => res.data,
-  error => {
+  (res) => res.data,
+  (error) => {
     if (error.response?.status === 401) logout();
     return Promise.reject(error);
   }
@@ -495,7 +503,7 @@ request.interceptors.response.use(
 
 ---
 
-## 9. 如何实现前端线上监控？
+## 如何实现前端线上监控？
 
 ### 三步走：采集 → 上报 → 分析
 
@@ -512,21 +520,21 @@ class Monitor {
 
   watchJsError() {
     window.onerror = (msg, url, line, col, error) => {
-      this.report({ type: 'js_error', msg, url, line, stack: error?.stack });
+      this.report({ type: "js_error", msg, url, line, stack: error?.stack });
     };
-    window.addEventListener('unhandledrejection', e => {
-      this.report({ type: 'promise_error', reason: String(e.reason) });
+    window.addEventListener("unhandledrejection", (e) => {
+      this.report({ type: "promise_error", reason: String(e.reason) });
     });
   }
 
   watchPerformance() {
-    window.addEventListener('load', () => {
+    window.addEventListener("load", () => {
       const { domContentLoadedEventEnd, navigationStart, loadEventEnd } =
         performance.timing;
       this.report({
-        type: 'performance',
+        type: "performance",
         dclTime: domContentLoadedEventEnd - navigationStart,
-        loadTime: loadEventEnd - navigationStart
+        loadTime: loadEventEnd - navigationStart,
       });
     });
   }
@@ -536,10 +544,10 @@ class Monitor {
       ...data,
       url: location.href,
       userAgent: navigator.userAgent,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
     // 使用 sendBeacon 保证页面关闭时也能上报
-    navigator.sendBeacon('/api/monitor', JSON.stringify(payload));
+    navigator.sendBeacon("/api/monitor", JSON.stringify(payload));
   }
 }
 ```
@@ -553,11 +561,12 @@ class Monitor {
 
 ---
 
-## 10. 百万人同时抢一个商品，如何判断第一个？
+## 百万人同时抢一个商品，如何判断第一个？
 
 ### 核心在后端，前端只负责展示
 
 前端能做的：
+
 - 按钮防抖/防重复点击
 - 请求发出后立即禁用按钮
 - 展示排队/结果状态
@@ -572,9 +581,9 @@ async function handleBuy() {
   buyBtn.disabled = true;
 
   try {
-    const result = await fetch('/api/seckill', { method: 'POST' });
+    const result = await fetch("/api/seckill", { method: "POST" });
     const { success, message } = await result.json();
-    showResult(success ? '抢购成功！' : message);
+    showResult(success ? "抢购成功！" : message);
   } finally {
     isSubmitting = false;
     buyBtn.disabled = false;
@@ -596,18 +605,18 @@ SETNX product:1:winner userId
 
 ## 总结
 
-| 题目 | 核心考点 |
-|------|---------|
-| 准确倒计时 | 时间戳差值，不依赖定时器次数 |
-| 秒杀倒计时 | 服务器时间校准，防篡改 |
-| 系统越来越慢 | DevTools 定位，内存泄漏排查 |
-| 几万条数据展示 | 虚拟列表，Web Worker |
-| 瀑布流低端机优化 | 懒加载，降级策略，虚拟列表 |
-| 单选框组件设计 | slot + provide/inject 组合组件 |
-| 白屏排查 | 系统化排查流程，ErrorBoundary |
-| 新项目启动 | 需求对齐，技术选型，工程化 |
-| 前端监控 | 采集、上报、source map 还原 |
-| 百万并发抢购 | 前端防重，后端 Redis 原子操作 |
+| 题目             | 核心考点                       |
+| ---------------- | ------------------------------ |
+| 准确倒计时       | 时间戳差值，不依赖定时器次数   |
+| 秒杀倒计时       | 服务器时间校准，防篡改         |
+| 系统越来越慢     | DevTools 定位，内存泄漏排查    |
+| 几万条数据展示   | 虚拟列表，Web Worker           |
+| 瀑布流低端机优化 | 懒加载，降级策略，虚拟列表     |
+| 单选框组件设计   | slot + provide/inject 组合组件 |
+| 白屏排查         | 系统化排查流程，ErrorBoundary  |
+| 新项目启动       | 需求对齐，技术选型，工程化     |
+| 前端监控         | 采集、上报、source map 还原    |
+| 百万并发抢购     | 前端防重，后端 Redis 原子操作  |
 
 场景题没有标准答案，面试官考察的是你的**思考过程**：能否快速定位问题本质，给出合理的设计方案，并考虑到边界情况和工程实践。
 

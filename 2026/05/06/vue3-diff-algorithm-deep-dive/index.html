@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <!-- Minima -->
+  <!-- Hexo theme created by @adisaktijrs -->
+
+  <!-- Basic Page Needs
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta charset="utf-8">
+
+  
+  <title>Vue3 Diff 算法详解：从原理到源码实现</title>
+  
+  <link rel="canonical" href="https://liaojunhao.github.io/2026/05/06/vue3-diff-algorithm-deep-dive/">
+  
+  <meta name="description" content="前言Diff 算法是 Virtual DOM 的核心，也是前端面试中的高频难点。本文基于 Vue 3.2 最新源码，手把手分析 Diff 的五大步骤，以及最长递增子序列在其中扮演的关键角色。  一、Diff 算法的触发场景很多人以为「DOM 更新就会触发 Diff」，这是一个误区。 Diff 只在”">
+  
+  
+  <meta name="author" content="andy">
+  
+  <meta property="og:image" content="https://liaojunhao.github.ioundefined">
+  
+  <meta property="og:site_name" content="冰河末日的博客" />
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Vue3 Diff 算法详解：从原理到源码实现" />
+  
+  <meta property="og:description" content="前言Diff 算法是 Virtual DOM 的核心，也是前端面试中的高频难点。本文基于 Vue 3.2 最新源码，手把手分析 Diff 的五大步骤，以及最长递增子序列在其中扮演的关键角色。  一、Diff 算法的触发场景很多人以为「DOM 更新就会触发 Diff」，这是一个误区。 Diff 只在”">
+  
+  <meta property="og:url" content="https://liaojunhao.github.io/2026/05/06/vue3-diff-algorithm-deep-dive/" />
+
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Vue3 Diff 算法详解：从原理到源码实现">
+  
+  <meta name="twitter:description" content="前言Diff 算法是 Virtual DOM 的核心，也是前端面试中的高频难点。本文基于 Vue 3.2 最新源码，手把手分析 Diff 的五大步骤，以及最长递增子序列在其中扮演的关键角色。  一、Diff 算法的触发场景很多人以为「DOM 更新就会触发 Diff」，这是一个误区。 Diff 只在”">
+  
+  
+  <meta name="twitter:image" content="https://liaojunhao.github.ioundefined">
+  
+  <meta name="twitter:url" content="https://liaojunhao.github.io/2026/05/06/vue3-diff-algorithm-deep-dive/" />
+
+  <!-- Mobile Specific Metas
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Preload fonts
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link rel="preload" href="../fonts/dm-serif-display-v4-latin-regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="../fonts/inter-v2-latin-regular.woff2" as="font" type="font/woff2" crossorigin>
+
+  <!-- CSS
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  
+<link rel="stylesheet" href="/css/normalize.css">
+
+  
+<link rel="stylesheet" href="/css/skeleton.css">
+
+  
+<link rel="stylesheet" href="/css/custom.css">
+
+  
+<link rel="stylesheet" href="/css/prism-dark.css">
+
+  
+<link rel="stylesheet" href="/css/prism-line-numbers.css">
+
+  <!-- User css -->
+  
+
+  <!-- Favicon
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <link rel="icon" type="image/png" href="/images/favicon.png">
+
+  <!-- Custom Theme Color Style
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  <style>
+  a:not(.icon) {
+    text-decoration-color: #0FA0CE;
+    background-image: linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0) 50%,
+      #0FA0CE 50%
+    );
+  }
+  blockquote {
+    border-left: 8px solid #0FA0CE;
+  }
+  .nanobar .bar {
+    background: #0FA0CE;
+  }
+  .button.button-primary:hover,
+  button.button-primary:hover,
+  input[type="submit"].button-primary:hover,
+  input[type="reset"].button-primary:hover,
+  input[type="button"].button-primary:hover,
+  .button.button-primary:focus,
+  button.button-primary:focus,
+  input[type="submit"].button-primary:focus,
+  input[type="reset"].button-primary:focus,
+  input[type="button"].button-primary:focus {
+    background-color: #0FA0CE;
+    border-color: #0FA0CE;
+  }
+  input[type="email"]:focus,
+  input[type="number"]:focus,
+  input[type="search"]:focus,
+  input[type="text"]:focus,
+  input[type="tel"]:focus,
+  input[type="url"]:focus,
+  input[type="password"]:focus,
+  textarea:focus,
+  select:focus {
+    border: 1px solid #0FA0CE;
+  }
+</style>
+
+  <!-- Google Analytics (With Privacy Settings On)
+  –––––––––––––––––––––––––––––––––––––––––––––––––– -->
+  
+
+<meta name="generator" content="Hexo 5.4.2"><link rel="alternate" href="/atom.xml" title="冰河末日的博客" type="application/atom+xml">
+</head>
+
+<body>
+  <div class="container">
+    <div class="row">
+      <div>
+
+        <div class="row">
+  <div class="two columns" style="max-width: 50px">
+    <h1 class="mt-2 mode">
+      <div onclick=setDarkMode(true) id="darkBtn">🌑</div>
+      <div onclick=setDarkMode(false) id="lightBtn" class=hidden>☀️</div>
+      <script >
+        if (localStorage.getItem('preferredTheme') == 'dark') {
+          setDarkMode(true)
+        }
+        function setDarkMode(isDark) {
+          var darkBtn = document.getElementById('darkBtn')
+          var lightBtn = document.getElementById('lightBtn')
+          if (isDark) {
+            lightBtn.style.display = "block"
+            darkBtn.style.display = "none"
+            localStorage.setItem('preferredTheme', 'dark');
+          } else {
+            lightBtn.style.display = "none"
+            darkBtn.style.display = "block"
+            localStorage.removeItem('preferredTheme');
+          }
+          document.body.classList.toggle("darkmode");
+        }
+      </script>
+    </h1>
+  </div>
+
+  <div class="six columns ml-1">
+    <h1 class="mt-2">
+      冰河末日的博客
+    </h1>
+  </div>
+
+  <div class="twelve columns">
+    <div class="row">
+      <div class="nine columns left">
+        <a href="/">主页</a>
+        
+          
+          <a href="/archives" class="ml">归档</a>
+          
+        
+          
+          <a href="/About" class="ml">关于</a>
+          
+        
+          
+          <a href="/categories" class="ml">分类</a>
+          
+        
+          
+          <a href="/tags" class="ml">标签</a>
+          
+        
+        
+      </div>
+    </div>
+    <hr style="margin-bottom: 2.6rem">
+  </div>
+</div>
+
+        <div class="trans">
+            <h2>Vue3 Diff 算法详解：从原理到源码实现</h2>
+  <span class="time" style="margin-bottom: 30px;display: block;">— 2026年5月6日</span>
+  <style>
+    .toc{margin-left: 35px;}
+  </style>
+  <div style="float: left; width: 220px; margin-left: -288px; opacity: .8; position: sticky; top: 0;">
+    <div style="overflow-x: hidden; overflow-y: auto; margin-bottom: 40px; height: calc(100vh - 188px); width: 220px;">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%89%8D%E8%A8%80"><span class="toc-text">前言</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%80%E3%80%81Diff-%E7%AE%97%E6%B3%95%E7%9A%84%E8%A7%A6%E5%8F%91%E5%9C%BA%E6%99%AF"><span class="toc-text">一、Diff 算法的触发场景</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%8C%E3%80%81key-%E7%9A%84%E4%BD%9C%E7%94%A8%E4%B8%8E-isSameVNodeType"><span class="toc-text">二、key 的作用与 isSameVNodeType</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#2-1-%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9C%80%E8%A6%81-key"><span class="toc-text">2.1 为什么需要 key</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#2-2-key-%E7%9A%84%E9%87%8D%E8%A6%81%E6%80%A7"><span class="toc-text">2.2 key 的重要性</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%89%E3%80%81Diff-%E7%AE%97%E6%B3%95%E7%9A%84%E4%BA%94%E5%A4%A7%E6%AD%A5%E9%AA%A4"><span class="toc-text">三、Diff 算法的五大步骤</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%9B%9B%E3%80%81%E5%89%8D%E5%9B%9B%E6%AD%A5%E8%AF%A6%E8%A7%A3"><span class="toc-text">四、前四步详解</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#4-1-%E6%AD%A5%E9%AA%A4%E4%B8%80%EF%BC%9Async-from-start%EF%BC%88%E8%87%AA%E5%89%8D%E5%90%91%E5%90%8E%EF%BC%89"><span class="toc-text">4.1 步骤一：sync from start（自前向后）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-2-%E6%AD%A5%E9%AA%A4%E4%BA%8C%EF%BC%9Async-from-end%EF%BC%88%E8%87%AA%E5%90%8E%E5%90%91%E5%89%8D%EF%BC%89"><span class="toc-text">4.2 步骤二：sync from end（自后向前）</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-3-%E6%AD%A5%E9%AA%A4%E4%B8%89%EF%BC%9A%E6%96%B0%E8%8A%82%E7%82%B9%E5%A4%9A%E4%BA%8E%E6%97%A7%E8%8A%82%E7%82%B9"><span class="toc-text">4.3 步骤三：新节点多于旧节点</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#4-4-%E6%AD%A5%E9%AA%A4%E5%9B%9B%EF%BC%9A%E6%97%A7%E8%8A%82%E7%82%B9%E5%A4%9A%E4%BA%8E%E6%96%B0%E8%8A%82%E7%82%B9"><span class="toc-text">4.4 步骤四：旧节点多于新节点</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%BA%94%E3%80%81%E6%9C%80%E9%95%BF%E9%80%92%E5%A2%9E%E5%AD%90%E5%BA%8F%E5%88%97%EF%BC%88%E6%A0%B8%E5%BF%83%E5%89%8D%E7%BD%AE%E7%9F%A5%E8%AF%86%EF%BC%89"><span class="toc-text">五、最长递增子序列（核心前置知识）</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#5-1-%E4%BB%80%E4%B9%88%E6%98%AF-LIS"><span class="toc-text">5.1 什么是 LIS</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-2-LIS-%E5%9C%A8-Diff-%E4%B8%AD%E7%9A%84%E4%BD%9C%E7%94%A8"><span class="toc-text">5.2 LIS 在 Diff 中的作用</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#5-3-Vue3-%E4%B8%AD-getSequence-%E7%9A%84%E5%AE%9E%E7%8E%B0"><span class="toc-text">5.3 Vue3 中 getSequence 的实现</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AD%E3%80%81%E7%AC%AC%E4%BA%94%E6%AD%A5%E8%AF%A6%E8%A7%A3%EF%BC%9A%E4%B9%B1%E5%BA%8F-Diff"><span class="toc-text">六、第五步详解：乱序 Diff</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#6-1-%E6%9E%84%E5%BB%BA-keyToNewIndexMap"><span class="toc-text">6.1 构建 keyToNewIndexMap</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-2-%E9%81%8D%E5%8E%86%E6%97%A7%E8%8A%82%E7%82%B9%EF%BC%8Cpatch-%E6%88%96-unmount"><span class="toc-text">6.2 遍历旧节点，patch 或 unmount</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#6-3-%E5%A4%84%E7%90%86%E7%A7%BB%E5%8A%A8%E4%B8%8E%E6%8C%82%E8%BD%BD"><span class="toc-text">6.3 处理移动与挂载</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E4%B8%83%E3%80%81%E5%AE%8C%E6%95%B4%E6%B5%81%E7%A8%8B%E6%80%BB%E7%BB%93"><span class="toc-text">七、完整流程总结</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#%E5%85%AB%E3%80%81%E9%9D%A2%E8%AF%95%E9%AB%98%E9%A2%91%E9%97%AE%E9%A2%98"><span class="toc-text">八、面试高频问题</span></a></li></ol>
+    </div>
+  </div>
+  <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>Diff 算法是 Virtual DOM 的核心，也是前端面试中的高频难点。本文基于 Vue 3.2 最新源码，手把手分析 Diff 的五大步骤，以及最长递增子序列在其中扮演的关键角色。</p>
+<hr>
+<h2 id="一、Diff-算法的触发场景"><a href="#一、Diff-算法的触发场景" class="headerlink" title="一、Diff 算法的触发场景"></a>一、Diff 算法的触发场景</h2><p>很多人以为「DOM 更新就会触发 Diff」，这是一个误区。</p>
+<p><strong>Diff 只在”一组 DOM”发生变化时被触发</strong>——即 <code>v-for</code> 循环渲染多个节点时，数据变化导致旧 VNode 数组需要更新为新 VNode 数组的场景。</p>
+<pre class="line-numbers language-markup" data-language="markup"><code class="language-markup"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>template</span><span class="token punctuation">></span></span>
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>ul</span><span class="token punctuation">></span></span>
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>li</span> <span class="token attr-name">v-for</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>item in arr<span class="token punctuation">"</span></span> <span class="token attr-name">:key</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>item.id<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+      &#123;&#123; item.title &#125;&#125;
+    <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>li</span><span class="token punctuation">></span></span>
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>ul</span><span class="token punctuation">></span></span>
+  <span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>button</span> <span class="token attr-name">@click</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>onChange<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>修改<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>button</span><span class="token punctuation">></span></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>template</span><span class="token punctuation">></span></span>
+
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>script</span><span class="token punctuation">></span></span><span class="token script"><span class="token language-javascript">
+<span class="token keyword">export</span> <span class="token keyword">default</span> <span class="token punctuation">&#123;</span>
+  <span class="token function">data</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">return</span> <span class="token punctuation">&#123;</span>
+      <span class="token literal-property property">arr</span><span class="token operator">:</span> <span class="token punctuation">[</span>
+        <span class="token punctuation">&#123;</span> <span class="token literal-property property">id</span><span class="token operator">:</span> <span class="token string">'1'</span><span class="token punctuation">,</span> <span class="token literal-property property">title</span><span class="token operator">:</span> <span class="token string">'a'</span> <span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+        <span class="token punctuation">&#123;</span> <span class="token literal-property property">id</span><span class="token operator">:</span> <span class="token string">'2'</span><span class="token punctuation">,</span> <span class="token literal-property property">title</span><span class="token operator">:</span> <span class="token string">'b'</span> <span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+        <span class="token punctuation">&#123;</span> <span class="token literal-property property">id</span><span class="token operator">:</span> <span class="token string">'3'</span><span class="token punctuation">,</span> <span class="token literal-property property">title</span><span class="token operator">:</span> <span class="token string">'c'</span> <span class="token punctuation">&#125;</span>
+      <span class="token punctuation">]</span>
+    <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">&#125;</span><span class="token punctuation">,</span>
+  <span class="token literal-property property">methods</span><span class="token operator">:</span> <span class="token punctuation">&#123;</span>
+    <span class="token function">onChange</span><span class="token punctuation">(</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+      <span class="token keyword">this</span><span class="token punctuation">.</span>arr<span class="token punctuation">[</span><span class="token number">2</span><span class="token punctuation">]</span> <span class="token operator">=</span> <span class="token punctuation">&#123;</span> <span class="token literal-property property">id</span><span class="token operator">:</span> <span class="token string">'4'</span><span class="token punctuation">,</span> <span class="token literal-property property">title</span><span class="token operator">:</span> <span class="token string">'d'</span> <span class="token punctuation">&#125;</span>
+      <span class="token comment">// 触发 Diff：一组 li 需要更新</span>
+    <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span>
+</span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>script</span><span class="token punctuation">></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<hr>
+<h2 id="二、key-的作用与-isSameVNodeType"><a href="#二、key-的作用与-isSameVNodeType" class="headerlink" title="二、key 的作用与 isSameVNodeType"></a>二、key 的作用与 isSameVNodeType</h2><h3 id="2-1-为什么需要-key"><a href="#2-1-为什么需要-key" class="headerlink" title="2.1 为什么需要 key"></a>2.1 为什么需要 key</h3><p>上面的例子中，点击修改后，只有第三个 <code>li</code> 重新渲染了，前两个没有变化。Vue 是怎么知道的？</p>
+<p>答案在于 <code>isSameVNodeType</code> 方法：</p>
+<pre class="line-numbers language-typescript" data-language="typescript"><code class="language-typescript"><span class="token comment">// packages/runtime-core/src/vnode.ts</span>
+<span class="token keyword">function</span> <span class="token function">isSameVNodeType</span><span class="token punctuation">(</span>n1<span class="token operator">:</span> VNode<span class="token punctuation">,</span> n2<span class="token operator">:</span> VNode<span class="token punctuation">)</span><span class="token operator">:</span> <span class="token builtin">boolean</span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">return</span> n1<span class="token punctuation">.</span>type <span class="token operator">===</span> n2<span class="token punctuation">.</span>type <span class="token operator">&amp;&amp;</span> n1<span class="token punctuation">.</span>key <span class="token operator">===</span> n2<span class="token punctuation">.</span>key
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<ul>
+<li><strong>type</strong>：VNode 节点类型（<code>&#39;li&#39;</code>、<code>&#39;div&#39;</code>、<code>&#39;comment&#39;</code>、组件实例等）</li>
+<li><strong>key</strong>：<code>v-for</code> 绑定的唯一标识</li>
+</ul>
+<p>当 <code>type</code> 和 <code>key</code> 都相同时，两个 VNode 被认为是”相同的”，只需 <code>patch</code> 打补丁，无需重新创建 DOM。</p>
+<h3 id="2-2-key-的重要性"><a href="#2-2-key-的重要性" class="headerlink" title="2.2 key 的重要性"></a>2.2 key 的重要性</h3><p>没有 key 或 key 不稳定，会导致 Vue 无法正确复用 DOM 节点，引发性能问题和状态错乱：</p>
+<pre class="line-numbers language-markup" data-language="markup"><code class="language-markup"><span class="token comment">&lt;!-- ❌ 不推荐：用 index 作为 key --></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>li</span> <span class="token attr-name">v-for</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>(item, index) in arr<span class="token punctuation">"</span></span> <span class="token attr-name">:key</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>index<span class="token punctuation">"</span></span><span class="token punctuation">></span></span>
+
+<span class="token comment">&lt;!-- ✅ 推荐：用唯一 id 作为 key --></span>
+<span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>li</span> <span class="token attr-name">v-for</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>item in arr<span class="token punctuation">"</span></span> <span class="token attr-name">:key</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>item.id<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<hr>
+<h2 id="三、Diff-算法的五大步骤"><a href="#三、Diff-算法的五大步骤" class="headerlink" title="三、Diff 算法的五大步骤"></a>三、Diff 算法的五大步骤</h2><p>Vue3 的 <code>patchKeyedChildren</code> 将 Diff 分为 5 步：</p>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>名称</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>sync from start</td>
+<td>自前向后对比，相同节点直接 patch</td>
+</tr>
+<tr>
+<td>2</td>
+<td>sync from end</td>
+<td>自后向前对比，相同节点 patch</td>
+</tr>
+<tr>
+<td>3</td>
+<td>common sequence + mount</td>
+<td>新节点多于旧节点 → 挂载新增</td>
+</tr>
+<tr>
+<td>4</td>
+<td>common sequence + unmount</td>
+<td>旧节点多于新节点 → 卸载多余</td>
+</tr>
+<tr>
+<td>5</td>
+<td>unknown sequence</td>
+<td>乱序（最复杂，涉及移动）</td>
+</tr>
+</tbody></table>
+<p>前四步处理”新、旧节点数量相等或简单增删”的场景，第五步处理<strong>乱序</strong>——这是真正考验算法功力的地方。</p>
+<hr>
+<h2 id="四、前四步详解"><a href="#四、前四步详解" class="headerlink" title="四、前四步详解"></a>四、前四步详解</h2><h3 id="4-1-步骤一：sync-from-start（自前向后）"><a href="#4-1-步骤一：sync-from-start（自前向后）" class="headerlink" title="4.1 步骤一：sync from start（自前向后）"></a>4.1 步骤一：sync from start（自前向后）</h3><pre class="line-numbers language-typescript" data-language="typescript"><code class="language-typescript"><span class="token keyword">while</span> <span class="token punctuation">(</span>i <span class="token operator">&lt;=</span> oldChildrenEnd <span class="token operator">&amp;&amp;</span> i <span class="token operator">&lt;=</span> newChildrenEnd<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">const</span> oldVNode <span class="token operator">=</span> oldChildren<span class="token punctuation">[</span>i<span class="token punctuation">]</span>
+  <span class="token keyword">const</span> newVNode <span class="token operator">=</span> <span class="token function">normalizeVNode</span><span class="token punctuation">(</span>newChildren<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span>
+  
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">isSameVNodeType</span><span class="token punctuation">(</span>oldVNode<span class="token punctuation">,</span> newVNode<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token function">patch</span><span class="token punctuation">(</span>oldVNode<span class="token punctuation">,</span> newVNode<span class="token punctuation">,</span> container<span class="token punctuation">,</span> <span class="token keyword">null</span><span class="token punctuation">)</span> <span class="token comment">// 相同 → 打补丁</span>
+  <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">break</span> <span class="token comment">// 不同 → 停止</span>
+  <span class="token punctuation">&#125;</span>
+  i<span class="token operator">++</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>从头部开始，依次对比相同下标的 VNode。相同则 patch，不同则退出。</p>
+<h3 id="4-2-步骤二：sync-from-end（自后向前）"><a href="#4-2-步骤二：sync-from-end（自后向前）" class="headerlink" title="4.2 步骤二：sync from end（自后向前）"></a>4.2 步骤二：sync from end（自后向前）</h3><pre class="line-numbers language-typescript" data-language="typescript"><code class="language-typescript"><span class="token keyword">while</span> <span class="token punctuation">(</span>i <span class="token operator">&lt;=</span> oldChildrenEnd <span class="token operator">&amp;&amp;</span> i <span class="token operator">&lt;=</span> newChildrenEnd<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">const</span> oldVNode <span class="token operator">=</span> oldChildren<span class="token punctuation">[</span>oldChildrenEnd<span class="token punctuation">]</span>
+  <span class="token keyword">const</span> newVNode <span class="token operator">=</span> <span class="token function">normalizeVNode</span><span class="token punctuation">(</span>newChildrenEnd<span class="token punctuation">)</span>
+  
+  <span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token function">isSameVNodeType</span><span class="token punctuation">(</span>oldVNode<span class="token punctuation">,</span> newVNode<span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token function">patch</span><span class="token punctuation">(</span>oldVNode<span class="token punctuation">,</span> newVNode<span class="token punctuation">,</span> container<span class="token punctuation">,</span> <span class="token keyword">null</span><span class="token punctuation">)</span>
+  <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">break</span>
+  <span class="token punctuation">&#125;</span>
+  oldChildrenEnd<span class="token operator">--</span>
+  newChildrenEnd<span class="token operator">--</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>逻辑与步骤一相反，从尾部开始对比。两者结合可以快速处理”首尾相同、中间变化”的场景。</p>
+<h3 id="4-3-步骤三：新节点多于旧节点"><a href="#4-3-步骤三：新节点多于旧节点" class="headerlink" title="4.3 步骤三：新节点多于旧节点"></a>4.3 步骤三：新节点多于旧节点</h3><pre class="line-numbers language-typescript" data-language="typescript"><code class="language-typescript"><span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">></span> oldChildrenEnd<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">&lt;=</span> newChildrenEnd<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">const</span> nextPos <span class="token operator">=</span> newChildrenEnd <span class="token operator">+</span> <span class="token number">1</span>
+    <span class="token keyword">const</span> anchor <span class="token operator">=</span> nextPos <span class="token operator">&lt;</span> newChildrenLength 
+      <span class="token operator">?</span> newChildren<span class="token punctuation">[</span>nextPos<span class="token punctuation">]</span><span class="token punctuation">.</span>el 
+      <span class="token operator">:</span> parentAnchor
+    
+    <span class="token keyword">while</span> <span class="token punctuation">(</span>i <span class="token operator">&lt;=</span> newChildrenEnd<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+      <span class="token function">patch</span><span class="token punctuation">(</span><span class="token keyword">null</span><span class="token punctuation">,</span> <span class="token function">normalizeVNode</span><span class="token punctuation">(</span>newChildren<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token punctuation">,</span> container<span class="token punctuation">,</span> anchor<span class="token punctuation">)</span>
+      i<span class="token operator">++</span>
+    <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>通过 <code>arr.push()</code> 添加新元素时，多出的节点位于尾部；通过 <code>arr.unshift()</code> 添加时，多出的节点位于头部。核心是找到正确的锚点（anchor）来插入新增 DOM。</p>
+<h3 id="4-4-步骤四：旧节点多于新节点"><a href="#4-4-步骤四：旧节点多于新节点" class="headerlink" title="4.4 步骤四：旧节点多于新节点"></a>4.4 步骤四：旧节点多于新节点</h3><pre class="line-numbers language-typescript" data-language="typescript"><code class="language-typescript"><span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>i <span class="token operator">></span> newChildrenEnd<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">while</span> <span class="token punctuation">(</span>i <span class="token operator">&lt;=</span> oldChildrenEnd<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token function">unmount</span><span class="token punctuation">(</span>oldChildren<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token comment">// 直接卸载</span>
+    i<span class="token operator">++</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>通过 <code>arr.pop()</code> 或 <code>arr.shift()</code> 删除元素时，只需逐个卸载多余节点。</p>
+<hr>
+<h2 id="五、最长递增子序列（核心前置知识）"><a href="#五、最长递增子序列（核心前置知识）" class="headerlink" title="五、最长递增子序列（核心前置知识）"></a>五、最长递增子序列（核心前置知识）</h2><p>第五步乱序 Diff 中，最长递增子序列（Longest Increasing Subsequence，简称 LIS）是关键优化手段。</p>
+<h3 id="5-1-什么是-LIS"><a href="#5-1-什么是-LIS" class="headerlink" title="5.1 什么是 LIS"></a>5.1 什么是 LIS</h3><p>在一个数值序列中，找出一个子序列，使其元素依次递增，且长度尽可能长。</p>
+<pre class="line-numbers language-none"><code class="language-none">旧节点: 1, 2, 3, 4, 5, 6
+新节点: 1, 3, 2, 4, 6, 5
+
+可能的递增子序列：
+  1 → 3 → 6        (长度 3)
+  1 → 2 → 4 → 6    (长度 4) ← 这就是最长递增子序列<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="5-2-LIS-在-Diff-中的作用"><a href="#5-2-LIS-在-Diff-中的作用" class="headerlink" title="5.2 LIS 在 Diff 中的作用"></a>5.2 LIS 在 Diff 中的作用</h3><p>Diff 的本质操作是：<strong>新增、删除、打补丁、移动</strong>。</p>
+<p>对于乱序场景，如果直接逐个移动，复杂度是 O(n)。但利用 LIS，我们可以<strong>只移动”不在递增子序列中”的节点</strong>，大幅减少移动次数：</p>
+<pre class="line-numbers language-none"><code class="language-none">递增子序列: 1 → 2 → 4 → 6（4个节点无需移动）
+需要移动的: 3 和 5（仅需 2 次移动）
+
+对比：若没有 LIS 策略，需要移动 4 次才能完成转换<span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span></span></code></pre>
+
+<h3 id="5-3-Vue3-中-getSequence-的实现"><a href="#5-3-Vue3-中-getSequence-的实现" class="headerlink" title="5.3 Vue3 中 getSequence 的实现"></a>5.3 Vue3 中 getSequence 的实现</h3><p>Vue3 使用”贪心 + 二分查找”实现 LIS，时间复杂度 O(n log n)：</p>
+<pre class="line-numbers language-typescript" data-language="typescript"><code class="language-typescript"><span class="token comment">// packages/runtime-core/src/renderer.ts</span>
+<span class="token keyword">function</span> <span class="token function">getSequence</span><span class="token punctuation">(</span>arr<span class="token operator">:</span> <span class="token builtin">number</span><span class="token punctuation">[</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token operator">:</span> <span class="token builtin">number</span><span class="token punctuation">[</span><span class="token punctuation">]</span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">const</span> p <span class="token operator">=</span> arr<span class="token punctuation">.</span><span class="token function">slice</span><span class="token punctuation">(</span><span class="token punctuation">)</span>        <span class="token comment">// 回溯数组</span>
+  <span class="token keyword">const</span> result <span class="token operator">=</span> <span class="token punctuation">[</span><span class="token number">0</span><span class="token punctuation">]</span>          <span class="token comment">// 存储下标</span>
+  <span class="token keyword">let</span> i<span class="token punctuation">,</span> j<span class="token punctuation">,</span> u<span class="token punctuation">,</span> v<span class="token punctuation">,</span> c
+  
+  <span class="token keyword">for</span> <span class="token punctuation">(</span>i <span class="token operator">=</span> <span class="token number">0</span><span class="token punctuation">;</span> i <span class="token operator">&lt;</span> arr<span class="token punctuation">.</span>length<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token keyword">const</span> arrI <span class="token operator">=</span> arr<span class="token punctuation">[</span>i<span class="token punctuation">]</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>arrI <span class="token operator">!==</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+      j <span class="token operator">=</span> result<span class="token punctuation">[</span>result<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span>
+      
+      <span class="token comment">// arr[j] &lt; arrI → 找到更大的序列，直接加入</span>
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>arr<span class="token punctuation">[</span>j<span class="token punctuation">]</span> <span class="token operator">&lt;</span> arrI<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        p<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> j
+        result<span class="token punctuation">.</span><span class="token function">push</span><span class="token punctuation">(</span>i<span class="token punctuation">)</span>
+        <span class="token keyword">continue</span>
+      <span class="token punctuation">&#125;</span>
+      
+      <span class="token comment">// 二分查找：找最小的且大于 arrI 的元素位置</span>
+      u <span class="token operator">=</span> <span class="token number">0</span>
+      v <span class="token operator">=</span> result<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span>
+      <span class="token keyword">while</span> <span class="token punctuation">(</span>u <span class="token operator">&lt;</span> v<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        c <span class="token operator">=</span> <span class="token punctuation">(</span>u <span class="token operator">+</span> v<span class="token punctuation">)</span> <span class="token operator">>></span> <span class="token number">1</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>arr<span class="token punctuation">[</span>result<span class="token punctuation">[</span>c<span class="token punctuation">]</span><span class="token punctuation">]</span> <span class="token operator">&lt;</span> arrI<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+          u <span class="token operator">=</span> c <span class="token operator">+</span> <span class="token number">1</span>
+        <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+          v <span class="token operator">=</span> c
+        <span class="token punctuation">&#125;</span>
+      <span class="token punctuation">&#125;</span>
+      
+      <span class="token keyword">if</span> <span class="token punctuation">(</span>arrI <span class="token operator">&lt;</span> arr<span class="token punctuation">[</span>result<span class="token punctuation">[</span>u<span class="token punctuation">]</span><span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+        <span class="token keyword">if</span> <span class="token punctuation">(</span>u <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+          p<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">=</span> result<span class="token punctuation">[</span>u <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span>
+        <span class="token punctuation">&#125;</span>
+        result<span class="token punctuation">[</span>u<span class="token punctuation">]</span> <span class="token operator">=</span> i
+      <span class="token punctuation">&#125;</span>
+    <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">&#125;</span>
+  
+  <span class="token comment">// 回溯得到最终下标</span>
+  u <span class="token operator">=</span> result<span class="token punctuation">.</span>length
+  v <span class="token operator">=</span> result<span class="token punctuation">[</span>u <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">]</span>
+  <span class="token keyword">while</span> <span class="token punctuation">(</span>u<span class="token operator">--</span> <span class="token operator">></span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    result<span class="token punctuation">[</span>u<span class="token punctuation">]</span> <span class="token operator">=</span> v
+    v <span class="token operator">=</span> p<span class="token punctuation">[</span>v<span class="token punctuation">]</span>
+  <span class="token punctuation">&#125;</span>
+  <span class="token keyword">return</span> result
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p><strong>核心思想</strong>：</p>
+<ul>
+<li>遍历数组，维护一个递增的结果序列</li>
+<li>用二分查找快速找到”第一个大于等于当前值”的位置</li>
+<li>最终回溯得到完整的递增下标序列</li>
+</ul>
+<hr>
+<h2 id="六、第五步详解：乱序-Diff"><a href="#六、第五步详解：乱序-Diff" class="headerlink" title="六、第五步详解：乱序 Diff"></a>六、第五步详解：乱序 Diff</h2><p>这是整个 Diff 算法最复杂的部分，源码约 150 行，分三大块：</p>
+<h3 id="6-1-构建-keyToNewIndexMap"><a href="#6-1-构建-keyToNewIndexMap" class="headerlink" title="6.1 构建 keyToNewIndexMap"></a>6.1 构建 keyToNewIndexMap</h3><pre class="line-numbers language-typescript" data-language="typescript"><code class="language-typescript"><span class="token keyword">const</span> keyToNewIndexMap <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name">Map</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+<span class="token keyword">for</span> <span class="token punctuation">(</span>i <span class="token operator">=</span> s2<span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> e2<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">const</span> nextChild <span class="token operator">=</span> <span class="token function">normalizeVNode</span><span class="token punctuation">(</span>newChildren<span class="token punctuation">[</span>i<span class="token punctuation">]</span><span class="token punctuation">)</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>nextChild<span class="token punctuation">.</span>key <span class="token operator">!=</span> <span class="token keyword">null</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    keyToNewIndexMap<span class="token punctuation">.</span><span class="token function">set</span><span class="token punctuation">(</span>nextChild<span class="token punctuation">.</span>key<span class="token punctuation">,</span> i<span class="token punctuation">)</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>建立一个 <code>Map&lt;key, newIndex&gt;</code>，快速查找新节点在哪个位置。</p>
+<h3 id="6-2-遍历旧节点，patch-或-unmount"><a href="#6-2-遍历旧节点，patch-或-unmount" class="headerlink" title="6.2 遍历旧节点，patch 或 unmount"></a>6.2 遍历旧节点，patch 或 unmount</h3><pre class="line-numbers language-typescript" data-language="typescript"><code class="language-typescript"><span class="token keyword">const</span> newIndexToOldIndexMap <span class="token operator">=</span> <span class="token keyword">new</span> <span class="token class-name"><span class="token builtin">Array</span></span><span class="token punctuation">(</span>toBePatched<span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">fill</span><span class="token punctuation">(</span><span class="token number">0</span><span class="token punctuation">)</span>
+
+<span class="token keyword">for</span> <span class="token punctuation">(</span>i <span class="token operator">=</span> s1<span class="token punctuation">;</span> i <span class="token operator">&lt;=</span> e1<span class="token punctuation">;</span> i<span class="token operator">++</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">const</span> prevChild <span class="token operator">=</span> oldChildren<span class="token punctuation">[</span>i<span class="token punctuation">]</span>
+  
+  <span class="token comment">// 超出新节点数量 → 直接卸载</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>patched <span class="token operator">>=</span> toBePatched<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token function">unmount</span><span class="token punctuation">(</span>prevChild<span class="token punctuation">,</span> <span class="token operator">...</span><span class="token punctuation">)</span>
+    <span class="token keyword">continue</span>
+  <span class="token punctuation">&#125;</span>
+  
+  <span class="token comment">// 通过 key 查找新节点位置</span>
+  <span class="token keyword">let</span> newIndex <span class="token operator">=</span> keyToNewIndexMap<span class="token punctuation">.</span><span class="token function">get</span><span class="token punctuation">(</span>prevChild<span class="token punctuation">.</span>key<span class="token punctuation">)</span>
+  
+  <span class="token comment">// 没找到 → 旧节点没有对应的新节点，卸载</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>newIndex <span class="token operator">===</span> <span class="token keyword">undefined</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token function">unmount</span><span class="token punctuation">(</span>prevChild<span class="token punctuation">,</span> <span class="token operator">...</span><span class="token punctuation">)</span>
+  <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+    <span class="token comment">// 记录：新节点 index 对应的旧节点 index（+1，0 代表新增）</span>
+    newIndexToOldIndexMap<span class="token punctuation">[</span>newIndex <span class="token operator">-</span> s2<span class="token punctuation">]</span> <span class="token operator">=</span> i <span class="token operator">+</span> <span class="token number">1</span>
+    
+    <span class="token comment">// 判断是否需要移动</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>newIndex <span class="token operator">>=</span> maxNewIndexSoFar<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+      maxNewIndexSoFar <span class="token operator">=</span> newIndex
+    <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+      moved <span class="token operator">=</span> <span class="token boolean">true</span> <span class="token comment">// 出现了"逆序"，需要移动</span>
+    <span class="token punctuation">&#125;</span>
+    
+    <span class="token function">patch</span><span class="token punctuation">(</span>prevChild<span class="token punctuation">,</span> newChildren<span class="token punctuation">[</span>newIndex<span class="token punctuation">]</span><span class="token punctuation">,</span> <span class="token operator">...</span><span class="token punctuation">)</span>
+    patched<span class="token operator">++</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p>核心：遍历旧节点，找到对应的新节点位置，记录到 <code>newIndexToOldIndexMap</code>，并判断是否需要移动。</p>
+<h3 id="6-3-处理移动与挂载"><a href="#6-3-处理移动与挂载" class="headerlink" title="6.3 处理移动与挂载"></a>6.3 处理移动与挂载</h3><pre class="line-numbers language-typescript" data-language="typescript"><code class="language-typescript"><span class="token keyword">const</span> increasingNewIndexSequence <span class="token operator">=</span> moved 
+  <span class="token operator">?</span> <span class="token function">getSequence</span><span class="token punctuation">(</span>newIndexToOldIndexMap<span class="token punctuation">)</span> 
+  <span class="token operator">:</span> <span class="token punctuation">[</span><span class="token punctuation">]</span>
+
+j <span class="token operator">=</span> increasingNewIndexSequence<span class="token punctuation">.</span>length <span class="token operator">-</span> <span class="token number">1</span>
+
+<span class="token keyword">for</span> <span class="token punctuation">(</span>i <span class="token operator">=</span> toBePatched <span class="token operator">-</span> <span class="token number">1</span><span class="token punctuation">;</span> i <span class="token operator">>=</span> <span class="token number">0</span><span class="token punctuation">;</span> i<span class="token operator">--</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+  <span class="token keyword">const</span> nextIndex <span class="token operator">=</span> s2 <span class="token operator">+</span> i
+  <span class="token keyword">const</span> nextChild <span class="token operator">=</span> newChildren<span class="token punctuation">[</span>nextIndex<span class="token punctuation">]</span>
+  <span class="token keyword">const</span> anchor <span class="token operator">=</span> nextIndex <span class="token operator">+</span> <span class="token number">1</span> <span class="token operator">&lt;</span> l2 
+    <span class="token operator">?</span> newChildren<span class="token punctuation">[</span>nextIndex <span class="token operator">+</span> <span class="token number">1</span><span class="token punctuation">]</span><span class="token punctuation">.</span>el 
+    <span class="token operator">:</span> parentAnchor
+  
+  <span class="token comment">// 新节点没有对应的旧节点 → 挂载</span>
+  <span class="token keyword">if</span> <span class="token punctuation">(</span>newIndexToOldIndexMap<span class="token punctuation">[</span>i<span class="token punctuation">]</span> <span class="token operator">===</span> <span class="token number">0</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token function">patch</span><span class="token punctuation">(</span><span class="token keyword">null</span><span class="token punctuation">,</span> nextChild<span class="token punctuation">,</span> container<span class="token punctuation">,</span> anchor<span class="token punctuation">,</span> <span class="token operator">...</span><span class="token punctuation">)</span>
+  <span class="token punctuation">&#125;</span>
+  <span class="token comment">// 需要移动</span>
+  <span class="token keyword">else</span> <span class="token keyword">if</span> <span class="token punctuation">(</span>moved<span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+    <span class="token comment">// 不在最长递增子序列中 → 移动</span>
+    <span class="token keyword">if</span> <span class="token punctuation">(</span>j <span class="token operator">&lt;</span> <span class="token number">0</span> <span class="token operator">||</span> i <span class="token operator">!==</span> increasingNewIndexSequence<span class="token punctuation">[</span>j<span class="token punctuation">]</span><span class="token punctuation">)</span> <span class="token punctuation">&#123;</span>
+      <span class="token function">move</span><span class="token punctuation">(</span>nextChild<span class="token punctuation">,</span> container<span class="token punctuation">,</span> anchor<span class="token punctuation">,</span> MoveType<span class="token punctuation">.</span><span class="token constant">REORDER</span><span class="token punctuation">)</span>
+    <span class="token punctuation">&#125;</span> <span class="token keyword">else</span> <span class="token punctuation">&#123;</span>
+      j<span class="token operator">--</span> <span class="token comment">// 在递增子序列中，不移动</span>
+    <span class="token punctuation">&#125;</span>
+  <span class="token punctuation">&#125;</span>
+<span class="token punctuation">&#125;</span><span aria-hidden="true" class="line-numbers-rows"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span></code></pre>
+
+<p><strong>为什么倒序处理？</strong> 倒序可以用已处理好的节点作为锚点（anchor），避免每次都查找插入位置。</p>
+<hr>
+<h2 id="七、完整流程总结"><a href="#七、完整流程总结" class="headerlink" title="七、完整流程总结"></a>七、完整流程总结</h2><pre class="line-numbers language-none"><code class="language-none">旧: [A, B, C, D, E]    新: [A, C, B, F, D]<span aria-hidden="true" class="line-numbers-rows"><span></span></span></code></pre>
+
+<p><strong>步骤一</strong>：A vs A → patch，B vs C → 不同，停止<br><strong>步骤二</strong>：E vs D → 不同，停止<br><strong>步骤三</strong>：无新节点多<br><strong>步骤四</strong>：无旧节点多<br><strong>步骤五</strong>（乱序）：</p>
+<ol>
+<li>构建 keyToNewIndexMap</li>
+<li>遍历旧节点对比新节点位置</li>
+<li>计算 LIS，确定最小移动次数</li>
+<li>移动 + 挂载</li>
+</ol>
+<p><strong>移动次数 = 新节点数 - LIS 长度</strong></p>
+<hr>
+<h2 id="八、面试高频问题"><a href="#八、面试高频问题" class="headerlink" title="八、面试高频问题"></a>八、面试高频问题</h2><p><strong>Q：为什么 Vue3 推荐用唯一 id 作为 key，而不用 index？</strong></p>
+<p>A：用 index 作为 key 时，如果数据中间插入或删除，index 对应的节点会变化，导致 Vue 无法正确复用 DOM，所有节点都需要重新渲染，严重的会引发状态错乱。用唯一 id 可以确保 VNode 身份稳定，精准复用。</p>
+<p><strong>Q：Diff 算法的时间复杂度是多少？</strong></p>
+<p>A：Vue3 Diff 整体是 O(n)。前四步是 O(n)，第五步乱序因为有 LIS 优化，从暴力 O(n²) 降到 O(n log n)。</p>
+<p><strong>Q：没有 key 会怎样？</strong></p>
+<p>A：Vue 会退化为”就地复用”策略，按位置逐一对比，无法正确复用节点，行为不可控，容易出 bug。</p>
+<hr>
+<p><em>本文基于 Vue 3.2.0 源码分析，如有问题欢迎交流探讨。</em></p>
+
+  <p><a class="classtest-link" href="/tags/JavaScript/" rel="tag">JavaScript</a>, <a class="classtest-link" href="/tags/%E5%89%8D%E7%AB%AF/" rel="tag">前端</a></p>
+  
+
+
+          <div class="row mt-2">
+  
+    <div class="eight columns">
+      <p id="madewith" style="color: #c7c7c7;">知行合一
+        
+    </div>
+
+    <!-- Sepcial thanks to https://simpleicons.org/ for the icons -->
+    <div class="four columns mb-3 posisi" >
+      
+      <a class="ml-0 footer-link icon" href="https://github.com/liaojunhao" target="_blank" style="text-decoration: none" rel="noreferrer" aria-label="GitHub">
+        <svg class="github svg-hov" width="18" role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>GitHub</title><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+      </a>
+      
+
+      
+
+      
+
+      
+
+      
+
+    </div>
+  
+</div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+  <script src="/js/nanobar.min.js"></script>
+  <script>
+    var options = {
+      classname: 'nanobar',
+      id: 'myNanobar'
+    };
+    var nanobar = new Nanobar(options);
+    nanobar.go(30);
+    nanobar.go(76);
+    nanobar.go(100);
+  </script>
+
+</body>
+
+</html>

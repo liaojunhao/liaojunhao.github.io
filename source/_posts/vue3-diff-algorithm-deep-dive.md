@@ -5,6 +5,7 @@ categories:
   - JavaScript 系列
 tags:
   - JavaScript
+  - Vue
   - 前端
 ---
 

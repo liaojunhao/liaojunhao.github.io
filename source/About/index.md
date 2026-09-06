@@ -17,7 +17,7 @@ date: 2018-11-01 11:20:46
 
 写的小工具：
 
-- [Ydesign](https://liaojunhao.github.io/open/)
+- [Ydesign](https://ydesign.dev/)
 
 ### 为什么要写自己的博客
 

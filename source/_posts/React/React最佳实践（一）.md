@@ -2,7 +2,8 @@
 title: React最佳实践（一）
 date: 2020-08-14 17:02:16
 tags:
-  - React
+  - 最佳实践
+  - JSX
 categories:
   - React
 ---

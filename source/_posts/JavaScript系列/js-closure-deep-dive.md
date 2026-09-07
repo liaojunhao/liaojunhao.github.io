@@ -2,12 +2,11 @@
 title: JavaScript 闭包深度解析：从词法作用域到内存管理
 date: 2026-03-22 13:18:00
 tags:
-  - JavaScript
+  - 闭包
+  - 作用域
 categories:
-  - JavaScript 系列
+  - JavaScript系列
 ---
-
-# JavaScript 闭包深度解析：从词法作用域到内存管理
 
 ## 前言
 
@@ -57,10 +56,10 @@ console.log(fn()); // 42
 函数的作用域在**代码编写时**就已经确定，而非运行时决定：
 
 ```javascript
-const x = 'global';
+const x = "global";
 
 function outer() {
-  const x = 'outer';
+  const x = "outer";
 
   function inner() {
     console.log(x); // 'outer' — 在编写时就已经确定了作用域链
@@ -119,7 +118,7 @@ function delay(msg, ms) {
 // 事件监听
 function setupButton(el) {
   let count = 0;
-  el.addEventListener('click', () => {
+  el.addEventListener("click", () => {
     console.log(`Clicked ${++count} times`);
   });
 }
@@ -127,8 +126,8 @@ function setupButton(el) {
 // Promise
 function fetchUser(id) {
   return fetch(`/api/users/${id}`)
-    .then(res => res.json()) // 回调捕获 res
-    .then(user => console.log(user.name)); // 回调捕获 user
+    .then((res) => res.json()) // 回调捕获 res
+    .then((user) => console.log(user.name)); // 回调捕获 user
 }
 ```
 
@@ -155,15 +154,15 @@ const UserModule = (function () {
       if (cache.has(id)) return cache.get(id);
       // 模拟异步获取
       return fetch(`/api/users/${id}`)
-        .then(r => r.json())
-        .then(user => {
+        .then((r) => r.json())
+        .then((user) => {
           cache.set(id, user);
           return user;
         });
     },
     clear() {
       cache.clear();
-    }
+    },
   };
 })();
 ```
@@ -183,9 +182,9 @@ function curry(fn) {
 }
 
 const add = curry((a, b, c) => a + b + c);
-console.log(add(1)(2)(3));     // 6
-console.log(add(1, 2)(3));     // 6
-console.log(add(1)(2, 3));     // 6
+console.log(add(1)(2)(3)); // 6
+console.log(add(1, 2)(3)); // 6
+console.log(add(1)(2, 3)); // 6
 ```
 
 ### 4.3 偏函数应用（Partial Application）
@@ -198,11 +197,11 @@ function bind(fn, context, ...presetArgs) {
 }
 
 // 使用示例：创建日志函数
-const logError = bind(console.log, console, '[ERROR]');
-const logInfo = bind(console.log, console, '[INFO]');
+const logError = bind(console.log, console, "[ERROR]");
+const logInfo = bind(console.log, console, "[INFO]");
 
-logError('Something went wrong'); // [ERROR] Something went wrong
-logInfo('Server started');       // [INFO] Server started
+logError("Something went wrong"); // [ERROR] Something went wrong
+logInfo("Server started"); // [INFO] Server started
 ```
 
 ### 4.4 防抖与节流
@@ -245,7 +244,7 @@ function createIterator(array) {
     },
     [Symbol.iterator]() {
       return this;
-    }
+    },
   };
 }
 
@@ -344,7 +343,7 @@ V8 引擎采用**可达性（Reachability）**算法进行垃圾回收。闭包�
 
 ```javascript
 function heavy() {
-  const hugeArray = new Array(1000000).fill('data');
+  const hugeArray = new Array(1000000).fill("data");
 
   return function use() {
     return hugeArray.length;
@@ -361,7 +360,7 @@ fn = null; // 解除引用，hugeArray 可被回收
 // 场景 1：未清理的事件监听
 function bindEvent(el) {
   const bigData = loadBigData();
-  el.addEventListener('click', () => {
+  el.addEventListener("click", () => {
     process(bigData);
   });
   // 忘记移除监听 → el、bigData 均无法回收
@@ -386,12 +385,12 @@ function leak() {
 
 ### 6.3 性能优化建议
 
-| 策略 | 说明 |
-|------|------|
-| 及时解引用 | 不再使用的闭包赋值为 `null` |
-| 避免不必要闭包 | 能用块级作用域解决的，不要用闭包 |
-| 控制捕获范围 | 只捕获需要的变量，不要捕获整个外部环境 |
-| 使用 WeakMap | 对于引用类型，考虑使用 `WeakMap` 避免阻止垃圾回收 |
+| 策略           | 说明                                              |
+| -------------- | ------------------------------------------------- |
+| 及时解引用     | 不再使用的闭包赋值为 `null`                       |
+| 避免不必要闭包 | 能用块级作用域解决的，不要用闭包                  |
+| 控制捕获范围   | 只捕获需要的变量，不要捕获整个外部环境            |
+| 使用 WeakMap   | 对于引用类型，考虑使用 `WeakMap` 避免阻止垃圾回收 |
 
 ```javascript
 // 使用 WeakMap 避免内存泄漏
@@ -423,7 +422,7 @@ function Timer() {
       // ❌ 闭包捕获了 count = 0，每次都是 0 + 1 = 1
       // setCount(count + 1);
       // ✅ 使用函数式更新，避免闭包陷阱
-      setCount(prev => prev + 1);
+      setCount((prev) => prev + 1);
     }, 1000);
     return () => clearInterval(id);
   }, []);

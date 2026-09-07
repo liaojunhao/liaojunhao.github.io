@@ -163,6 +163,52 @@ img {
   margin-right: 10px;
 }
 
+.tag-cloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem 0.8rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tag-cloud-item {
+  margin: 0;
+}
+
+.tag-cloud-item a:not(.icon) {
+  display: inline-block;
+  padding: 0.28rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid rgba(128, 128, 128, 0.35);
+  line-height: 1.4;
+  text-decoration: none;
+  text-decoration-color: unset;
+  background-image: none;
+  background-size: auto;
+  color: inherit;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.tag-cloud-item a:hover:not(.icon),
+.tag-cloud-item a:focus:not(.icon) {
+  background-image: none;
+  background-position: unset;
+  color: #0FA0CE;
+  background-color: rgba(15, 160, 206, 0.1);
+  border-color: #0FA0CE;
+}
+
+.tag-cloud-item sup {
+  margin-left: 0.2em;
+  font-size: 0.72em;
+  opacity: 0.65;
+}
+
+body.darkmode .tag-cloud-item a:not(.icon) {
+  border-color: rgba(200, 200, 200, 0.28);
+}
+
 .about {
   width: 150px;
   height: 150px;

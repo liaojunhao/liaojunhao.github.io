@@ -2,9 +2,10 @@
 title: JavaScript函数重载
 date: 2017-09-21 14:56:19
 categories:
-  - JavaScript 系列
+  - JavaScript系列
 tags:
-  - JavaScript
+  - 函数
+  - 闭包
 ---
 
 > 译者按: jQuery 之父 John Resig 巧妙地利用了闭包，实现了 JavaScript 函数重载。

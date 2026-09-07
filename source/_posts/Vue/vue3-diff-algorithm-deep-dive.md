@@ -2,11 +2,11 @@
 title: Vue3 Diff 算法详解：从原理到源码实现
 date: 2026-05-06 17:30:00
 categories:
-  - JavaScript 系列
-tags:
-  - JavaScript
   - Vue
-  - 前端
+tags:
+  - 源码
+  - Diff
+  - 面试
 ---
 
 ## 前言

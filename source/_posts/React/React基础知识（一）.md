@@ -2,7 +2,8 @@
 title: React基础知识（一）
 date: 2019-05-22 16:57:42
 tags:
-  - React
+  - JSX
+  - 组件
 categories:
   - React
 ---

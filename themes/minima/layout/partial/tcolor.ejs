@@ -7,6 +7,17 @@
       #<%= theme.tcolor %> 50%
     );
   }
+  .tag-cloud-item a:not(.icon) {
+    text-decoration: none;
+    background-image: none;
+  }
+  .tag-cloud-item a:hover:not(.icon),
+  .tag-cloud-item a:focus:not(.icon) {
+    background-image: none;
+    color: #<%= theme.tcolor %>;
+    background-color: #<%= theme.tcolor %>1a;
+    border-color: #<%= theme.tcolor %>;
+  }
   blockquote {
     border-left: 8px solid #<%= theme.tcolor %>;
   }

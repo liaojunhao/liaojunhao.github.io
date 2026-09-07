@@ -2,9 +2,10 @@
 title: JavaScript代码优化技巧
 date: 2018-07-03 10:08:03
 categories:
-  - JavaScript 系列
+  - JavaScript系列
 tags:
-  - JavaScript
+  - 性能优化
+  - 最佳实践
 ---
 
 ## if-多条件判断

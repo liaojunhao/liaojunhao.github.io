@@ -2,11 +2,11 @@
 title: Vue3 编译器核心逻辑：从 template 到 render 函数
 date: 2026-05-07 10:30:00
 categories:
-  - JavaScript 系列
-tags:
-  - JavaScript
   - Vue
-  - 前端
+tags:
+  - 源码
+  - 编译器
+  - 面试
 ---
 
 ## 前言

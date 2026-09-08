@@ -248,20 +248,15 @@ blockquote footer cite:before {
 }
 
 /* Scroll bar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+body,
+.post-toc-inner {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-::-webkit-scrollbar-thumb {
-  background: rgb(128 128 128 / 70%);
-}
-::-webkit-scrollbar-thumb:window-inactive {
-  background: rgb(128 128 128 / 20%);
-}
-
-::-webkit-scrollbar-thumb:active {
-  background-color: rgb(128 128 128 / 100%);
+body::-webkit-scrollbar,
+.post-toc-inner::-webkit-scrollbar {
+  display: none;
 }
 
 /* Footer */
@@ -311,7 +306,7 @@ body {
   bottom: 10px;
   right: 10px;
   padding: 5px;
-  overflow-y: scroll;
+  overflow-y: auto;
   overflow-x: hidden;
   transition: all 0.3s ease-in-out;
 }
@@ -366,4 +361,32 @@ body.darkmode {
     text-align: left;
   }
 
+}
+
+.post-toc {
+  display: none;
+}
+
+.post-toc .toc-child {
+  margin-left: 1rem;
+}
+
+@media (min-width: 1100px) {
+  .post-toc {
+    display: block;
+    float: right;
+    width: 220px;
+    margin-right: -252px;
+    opacity: 0.8;
+    position: sticky;
+    top: 0;
+  }
+
+  .post-toc-inner {
+    overflow-x: hidden;
+    overflow-y: auto;
+    margin-bottom: 40px;
+    height: calc(100vh - 188px);
+    width: 220px;
+  }
 }

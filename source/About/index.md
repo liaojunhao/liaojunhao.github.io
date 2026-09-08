@@ -3,7 +3,7 @@ title: 简介
 date: 2018-11-01 11:20:46
 ---
 
-我的昵称**冰河末日**。
+我的昵称**冰河末日**，曾就职于天助网、腾讯。
 
 <img style="height:auto;" alt="" width="260" height="260"  src="https://avatars.githubusercontent.com/u/18565436?v=4">
 
